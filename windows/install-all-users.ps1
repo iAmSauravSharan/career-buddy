@@ -13,9 +13,9 @@ try {
   $desktop  = [Environment]::GetFolderPath('CommonDesktopDirectory')
   $menu     = Join-Path $programs 'Career Buddy'
   $dash     = Join-Path $root 'dashboard\career-dashboard.exe'
+  # Desktop shortcuts are per user (run-web.ps1 makes one on each user's own Desktop at logon).
   # path -> @(target, arguments, description)
   $links = [ordered]@{
-    (Join-Path $desktop 'Career Buddy.lnk')                  = @($wscript, "`"$(Join-Path $PSScriptRoot 'app.vbs')`"", 'Career Buddy job search dashboard')
     (Join-Path $menu    'Career Buddy.lnk')                  = @($wscript, "`"$(Join-Path $PSScriptRoot 'app.vbs')`"", 'Career Buddy job search dashboard')
     (Join-Path $menu    'Career Buddy terminal dashboard.lnk') = @($dash, '', 'Browse your pipeline in the terminal')
     (Join-Path $startup 'Career Buddy background.lnk')       = @($wscript, "`"$(Join-Path $PSScriptRoot 'run-web.vbs')`"", 'Keeps your Career Buddy dashboard and scheduled scans running')
@@ -26,7 +26,7 @@ try {
   foreach ($t in 'career-ops web', 'career-ops recurring scan') {
     Unregister-ScheduledTask -TaskName $t -Confirm:$false -ErrorAction SilentlyContinue
   }
-  Get-ChildItem (Join-Path $desktop 'career-ops.lnk'), (Join-Path $programs 'career-ops.lnk'), (Join-Path $startup 'career-ops background.lnk'),
+  Get-ChildItem (Join-Path $desktop 'career-ops.lnk'), (Join-Path $desktop 'Career Buddy.lnk'), (Join-Path $programs 'career-ops.lnk'), (Join-Path $startup 'career-ops background.lnk'),
     'C:\Users\*\Desktop\career-ops.lnk', 'C:\Users\*\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\career-ops.lnk' -ErrorAction SilentlyContinue | Remove-Item -Force
   foreach ($p in Get-CimInstance Win32_Process -Filter "Name='powershell.exe' OR Name='node.exe'") {
     $cl = "$($p.CommandLine)"
