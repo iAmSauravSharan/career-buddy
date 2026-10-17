@@ -63,7 +63,7 @@ function Sync-CoSystemLayer {
   # No /E here: with a file filter it would recreate the whole repo's folder tree, empty.
   robocopy $CoRoot $CoData AGENTS.md CLAUDE.md DATA_CONTRACT.md /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
   # Clean up empty repo-shaped folders (and stray AGENTS.md files) an earlier version left behind.
-  foreach ($n in 'dashboard','docs','evals','examples','fonts','lib','node_modules','plugins','plugins-registry','providers','scaffolder','scripts','seeds','test-fixtures','tests','utils','web','windows','data-static','.agents','.antigravitycli','.claude','.claude-plugin','.codex-plugin','.github','.grok','.kimi','.opencode','.qwen','.well-known') {
+  foreach ($n in 'dashboard','docs','evals','examples','fonts','lib','node_modules','plugins','plugins-registry','providers','scaffolder','scripts','seeds','test-fixtures','tests','utils','web','windows','data-static','.agents','.antigravitycli','.claude','.claude-plugin','.codex-plugin','.github','.grok','.kimi','.opencode','.qwen','.well-known','.git') {
     $p = Join-Path $CoData $n
     if ((Test-Path $p) -and -not (Get-ChildItem $p -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'AGENTS.md' })) {
       Remove-Item $p -Recurse -Force -ErrorAction SilentlyContinue
