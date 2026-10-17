@@ -1,0 +1,96 @@
+name: career-buddy Vercel preview
+
+# Deploys a Vercel *preview* of the web dashboard (web/) for every push and PR.
+# Requires three repo secrets (Settings > Secrets and variables > Actions):
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+# and the Vercel project's Root Directory set to `web`. Without the secrets the
+# job exits cleanly with a notice instead of failing.
+#
+# The preview is built from the committed tree only, so none of your personal
+# data (cv.md, data/, reports/ ... are gitignored) can end up on Vercel. It is a
+# UI preview: the app is local-first, so the deployed copy starts with no data
+# and cannot run the local CLI.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  preview:
+    name: deploy preview
+    runs-on: ubuntu-latest
+    # Fork PRs from other people never get secrets; skip them outright.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Check Vercel secrets
+        id: gate
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::notice::Vercel secrets not set; skipping preview deploy."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.gate.outputs.enabled == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        if: steps.gate.outputs.enabled == 'true'
+        with:
+          node-version: '24'
+
+      - name: Install Vercel CLI
+        if: steps.gate.outputs.enabled == 'true'
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel project settings
+        if: steps.gate.outputs.enabled == 'true'
+        run: vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build
+        if: steps.gate.outputs.enabled == 'true'
+        run: vercel build --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy preview
+        id: deploy
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          url=$(vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### Vercel preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment preview URL on the PR
+        if: steps.gate.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- career-buddy-vercel-preview -->';
+            const body = `${marker}\nVercel preview: ${process.env.PREVIEW_URL}\n\nCommit: ${context.sha.slice(0, 7)}`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
