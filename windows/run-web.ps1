@@ -21,6 +21,9 @@ if (-not (Test-Path $firstRun)) {
   try {
     # Starter personalization files (modes/_profile.md, _custom.md, _brief.md, voice-dna.md) in the data root.
     & $CoNode doctor.mjs --json --init-templates *>> $CoLog
+    # README step 3: the pre-configured company list for the scanner.
+    $portals = Join-Path $CoData 'portals.yml'
+    if (-not (Test-Path $portals)) { Copy-Item (Join-Path $CoRoot 'templates\portals.example.yml') $portals }
     # Playwright MCP lets the user's own Claude Code session verify postings and fill forms.
     $claude = Get-Command claude.exe -ErrorAction SilentlyContinue
     if ($claude) {
