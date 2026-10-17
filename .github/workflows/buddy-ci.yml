@@ -1,0 +1,54 @@
+name: career-buddy CI
+
+# Fork-level CI: runs on every push to any branch and on every PR, so a change
+# is checked before it is merged (upstream's test.yml/web-ci.yml only fire on
+# PRs to main / web/** pushes to main). Kept in its own file so
+# `git pull --rebase upstream main` never conflicts with upstream workflows.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: core lint + tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      # Skip the postinstall (Playwright download); the quick suite never
+      # launches a browser.
+      - run: npm install --ignore-scripts
+      - run: npm run lint
+      - run: node test-all.mjs --quick
+
+  web:
+    name: web tests + typecheck + build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc --noEmit
+      - run: npm run build
