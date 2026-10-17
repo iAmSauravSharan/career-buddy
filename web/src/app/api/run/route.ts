@@ -9,7 +9,8 @@ import { cliSubstitutionNotice, cliUnavailableError, resolveCliOrFallback } from
 import { localISODate } from "@/lib/followups";
 import { accumulateTokens, createAgentTextJoiner, isFatalGenericStderr, killMsForKind, timeoutMessage } from "@/lib/run-cli-support.mjs";
 import { spawnHeadlessCli } from "@/lib/spawn-cli.mjs";
-import { careerOpsRoot, readMemory, findReportFile, readInbox, readScanDates, readLanguageConfig } from "@/lib/career-ops";
+import { careerOpsRoot, rootScript, readMemory, findReportFile, readInbox, readScanDates, readLanguageConfig } from "@/lib/career-ops";
+import { fetchPostingText } from "@/lib/jd-prefetch.mjs";
 import { resolvePdfPaths, type PdfPaths } from "@/lib/pdf-paths.mjs";
 import { renderAndMarkPdf, writeCvHtml, pdfRunOutcome } from "@/lib/pdf-render.mjs";
 import { createCvEnvelopeFilter, type CvEnvelope } from "@/lib/cv-envelope.mjs";
@@ -60,13 +61,17 @@ export async function POST(req: Request) {
   // The precondition must check the file the prompt will actually read. Pinning
   // it to modes/oferta.md meant a configured market passed a check on a file the
   // run never opens, and would have missed a market dir with no evaluation mode.
+  // The engine checkout (scripts) can differ from the data root (cv.md, reports/, tracker).
+  const codeRoot = path.dirname(rootScript("reserve-report-num"));
   const lang = readLanguageConfig();
   const needsScript: Record<string, string> = { evaluate: lang.evalModeFile, "fix-portal": "verify-portals.mjs", pdf: "generate-pdf.mjs", cover: "modes/cover.md" };
   const required = needsScript[kind];
   // CAREER_OPS_ROOT is runtime user data, not a build input. Tracing this
   // dynamic path would copy the whole web project into every server bundle.
+  // Scripts (.mjs) are engine code and live in the checkout; mode files are read by the
+  // agent from the data root. In a split layout those are different directories.
   const requiredPath = required
-    ? path.join(/* turbopackIgnore: true */ careerOpsRoot(), required)
+    ? path.join(/* turbopackIgnore: true */ required.endsWith(".mjs") ? codeRoot : careerOpsRoot(), required)
     : "";
   if (required && !fs.existsSync(/* turbopackIgnore: true */ requiredPath)) {
     return new Response(
@@ -140,10 +145,15 @@ export async function POST(req: Request) {
   // (#4034). Only pdf fills a template, so nothing else pays for the lookup.
   // The root is passed, not re-derived: a relative CAREER_OPS_PROFILE resolves
   // against it, and `process.cwd()` here is `<core>/web` (see cv-template.mjs).
-  const cvTemplate = kind === "pdf" ? await resolveCvTemplate(careerOpsRoot()) : undefined;
+  const cvTemplate = kind === "pdf" ? await resolveCvTemplate(careerOpsRoot(), codeRoot) : undefined;
+  // Evaluate needs the real posting text. Read it here from the ATS's public API
+  // (Ashby/Greenhouse/Lever render client-side, so the agent's WebFetch only ever
+  // sees an empty shell). A miss leaves the agent's own WebFetch path unchanged.
+  const postingText = kind === "evaluate" ? await fetchPostingText(input, { script: rootScript("fetch-jd"), cwd: careerOpsRoot() }) : null;
   const prompt = buildPrompt({
     kind,
     input,
+    postingText,
     memory: readMemory(),
     today,
     postedAt,
@@ -434,6 +444,7 @@ export async function POST(req: Request) {
             spawnFn: spawn,
             execPath: process.execPath,
             root: careerOpsRoot(),
+            codeRoot,
             markdown,
             url: input,
             today,
@@ -468,6 +479,7 @@ export async function POST(req: Request) {
             spawnFn: spawn,
             execPath: process.execPath,
             root: careerOpsRoot(),
+            codeRoot,
             pdfPaths: paths,
             format,
             reportNum: paths.reportNum,
