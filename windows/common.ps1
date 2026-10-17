@@ -23,6 +23,16 @@ $env:CAREER_OPS_ROOT = $CoData
 # Child processes (web server, scans, the AI CLI it spawns) use the shared runtime first.
 # The user's own tools stay on PATH after it, so a personal claude/codex login still works.
 foreach ($d in $CoBinDir, $CoNodeDir) { if ((Test-Path $d) -and ($env:Path -notlike "*$d*")) { $env:Path = "$d;$env:Path" } }
+# Optional API keys: this user's own .env first, then the machine-wide keys.env shared by every account.
+# Neither overrides a variable that is already set.
+foreach ($f in (Join-Path $CoData '.env'), (Join-Path $CoHome 'keys.env')) {
+  if (-not (Test-Path $f)) { continue }
+  foreach ($line in Get-Content $f) {
+    if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$' -and -not [Environment]::GetEnvironmentVariable($Matches[1])) {
+      [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2].Trim('"', "'"))
+    }
+  }
+}
 
 function Test-CoUp { try { Invoke-WebRequest $CoUrl -UseBasicParsing -TimeoutSec 3 | Out-Null; $true } catch { $false } }
 function Start-CoRunner { Start-Process wscript.exe -ArgumentList "`"$(Join-Path $PSScriptRoot 'run-web.vbs')`"" }
