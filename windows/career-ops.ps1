@@ -27,6 +27,7 @@ function Invoke-Elevated([string]$script, [string[]]$extra) {
 }
 
 function Invoke-Npm([string]$dir, [string[]]$npmArgs) {
+  $ErrorActionPreference = 'Continue'   # npm warns on stderr; trust its exit code
   Push-Location $dir
   try { & (Join-Path $CoNodeDir 'npm.cmd') @npmArgs; if ($LASTEXITCODE) { throw "npm $($npmArgs -join ' ') failed in $dir" } } finally { Pop-Location }
 }
@@ -41,6 +42,7 @@ function Invoke-Rebuild([switch]$NoRestart) {
   }
   Invoke-Npm (Join-Path $CoRoot 'web') @('run', 'build')
   if (Get-Command go.exe -ErrorAction SilentlyContinue) {
+    $ErrorActionPreference = 'Continue'
     Push-Location (Join-Path $CoRoot 'dashboard'); try { go build -o career-dashboard.exe . } finally { Pop-Location }
   }
   $cache = Join-Path $CoRoot 'web\.next\cache'
@@ -72,7 +74,9 @@ switch ($Command) {
   'app'       { Start-Process wscript.exe -ArgumentList "`"$(Join-Path $PSScriptRoot 'app.vbs')`"" }
   'dashboard' { & (Join-Path $CoRoot 'dashboard\career-dashboard.exe') --path $CoData }
   'update'    {
+    $ErrorActionPreference = 'Continue'
     git -C $CoRoot pull --ff-only origin main; if ($LASTEXITCODE) { throw 'git pull failed' }
+    $ErrorActionPreference = 'Stop'
     Invoke-Rebuild
   }
   'rebuild'   { Invoke-Rebuild }

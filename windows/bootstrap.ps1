@@ -3,7 +3,8 @@
 # Builds C:\ProgramData\Career Buddy\{app,node,bin}, then runs `career-ops.ps1 install` (one admin prompt).
 # Re-running refreshes the Node and claude copies; the app itself updates with `career-ops.ps1 update`.
 param([string]$Repo = 'https://github.com/iAmSauravSharan/career-buddy.git')
-$ErrorActionPreference = 'Stop'
+# Native tools (git, npm) write progress to stderr; failures are caught via $LASTEXITCODE instead.
+$ErrorActionPreference = 'Continue'
 $home_ = Join-Path $env:ProgramData 'Career Buddy'
 $app   = Join-Path $home_ 'app'
 $node  = Join-Path $home_ 'node'
@@ -25,7 +26,10 @@ Copy-Item $claude (Join-Path $bin 'claude.exe') -Force
 "claude $(& (Join-Path $bin 'claude.exe') --version) -> $bin"
 
 if (-not (Test-Path (Join-Path $app '.git'))) {
-  git -c core.symlinks=false clone $Repo $app; if ($LASTEXITCODE) { throw 'git clone failed' }
+  # Clone from this dev checkout (fast, no network), then track GitHub for `update`.
+  $src = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  git -c core.symlinks=false clone --quiet --no-local $src $app; if ($LASTEXITCODE) { throw 'git clone failed' }
+  git -C $app remote set-url origin $Repo
 }
 # Windows checkouts without symlink rights get the skill links as text files; use real copies.
 $skill = Join-Path $app '.agents\skills\career-ops\SKILL.md'
