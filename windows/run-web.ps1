@@ -51,6 +51,20 @@ if (-not (Test-Path $desktopDone)) {
   } catch { Log "Desktop shortcut failed: $($_.Exception.Message)" }
 }
 
+# The web's AI runs (Evaluate, PDF, cover letter) start the CLI inside the data root and
+# tell it to read system files by relative path (modes/oferta.md, templates/...). Mirror
+# that system layer into the data root. /XO keeps a copy the user edited (newer), and the
+# user-layer files in modes/ are never touched.
+function Sync-CoSystemLayer {
+  $rc = @('/E', '/XO', '/R:1', '/W:1', '/NFL', '/NDL', '/NJH', '/NJS', '/NP')
+  robocopy (Join-Path $CoRoot 'modes') (Join-Path $CoData 'modes') @rc /XF _profile.md _custom.md _brief.md | Out-Null
+  robocopy (Join-Path $CoRoot 'templates') (Join-Path $CoData 'templates') @rc | Out-Null
+  robocopy (Join-Path $CoRoot 'batch') (Join-Path $CoData 'batch') batch-prompt.md @rc | Out-Null
+  robocopy $CoRoot $CoData AGENTS.md CLAUDE.md DATA_CONTRACT.md @rc | Out-Null
+  Log 'synced system layer (modes, templates) into the data root'
+}
+Sync-CoSystemLayer
+
 $web    = Join-Path $CoRoot 'web'
 $jobs   = Join-Path $web 'scripts\scheduled-jobs-runner.mjs'
 $server = $null; $scan = $null; $nextScan = (Get-Date).AddMinutes(1)
@@ -63,6 +77,7 @@ while ($true) {
   $current = Get-BuildId
   if ($current -and $current -ne $buildId -and $server -and -not $server.HasExited) {
     Log 'dashboard was rebuilt; restarting web server'
+    Sync-CoSystemLayer
     taskkill /PID $server.Id /T /F | Out-Null
     $server.WaitForExit(10000) | Out-Null
   }
