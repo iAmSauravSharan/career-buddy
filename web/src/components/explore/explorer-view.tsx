@@ -143,7 +143,7 @@ export function ExplorerView({
 
       {!rootExists && (
         <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-          Your career-ops home isn’t set up yet — discovery needs a checkout with a profile to seed from.
+          Your career-buddy home isn’t set up yet — discovery needs a checkout with a profile to seed from.
         </div>
       )}
 
@@ -376,8 +376,8 @@ function FailedCard({ msg, scannerMissing, onRetry }: { msg: string; scannerMiss
         </div>
         <h2 className={`${instrumentSerif.className} mt-4 text-2xl text-foreground`}>Discovery needs the full toolkit</h2>
         <p className="mx-auto mt-1.5 max-w-md text-sm text-muted">
-          Your career-ops home looks data-only or is on an older version. The free scanner ships with a complete checkout —
-          update career-ops, or paste a job URL on the pipeline to evaluate it directly.
+          Your career-buddy home looks data-only or is on an older version. The free scanner ships with a complete checkout —
+          update career-buddy, or paste a job URL on the pipeline to evaluate it directly.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <Link href="/pipeline" className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-brand-foreground transition hover:brightness-110">

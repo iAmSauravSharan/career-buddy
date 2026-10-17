@@ -77,6 +77,16 @@ export function rootScript(nameNoExt: string): string {
   return resolveRootScript(resolveCodeRoot(process.cwd(), process.env), nameNoExt);
 }
 
+/**
+ * Core module the web imports in-process (tracker-utils, tracker-parse, …): the
+ * data root's own copy when it has one (a full checkout used as the data root),
+ * else the engine checkout's — a split-layout data root has no `.mjs` files.
+ */
+export function coreModule(nameNoExt: string): string {
+  const local = resolveRootScript(careerOpsRoot(), nameNoExt);
+  return fs.existsSync(local) ? local : rootScript(nameNoExt);
+}
+
 // Feature-detect the core's `tracker.mjs delete --num` row-delete (#1200) by probing
 // the local script source — older checkouts lack it, so the delete UI hides itself.
 export function trackerCanDelete(): boolean {

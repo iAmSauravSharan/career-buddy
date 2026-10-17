@@ -1,4 +1,7 @@
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.svg"><img src="docs/wordmark-light.svg" alt="career-ops" width="250" height="56"></picture></p>
+# career-buddy
+
+> **career-buddy** is a personal fork of [career-ops](https://github.com/career-ops-hq/career-ops) by [@santifer](https://github.com/santifer), MIT-licensed. It tracks upstream and adds fixes for CV uploads (Word files, signed-out Claude Code) and for keeping user data outside the repo. Commands, file names and environment variables keep their original `career-ops` names so upstream updates still merge cleanly.
+
 
 <p align="center">The open-source AI job search agent.</p>
 
