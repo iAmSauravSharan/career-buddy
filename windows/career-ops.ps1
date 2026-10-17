@@ -36,9 +36,13 @@ function Invoke-Rebuild([switch]$NoRestart) {
   Stop-Mine
   # Deps only when the lockfile changed (another signed-in user's server can lock node_modules).
   foreach ($dir in $CoRoot, (Join-Path $CoRoot 'web')) {
-    $lock = Get-Item (Join-Path $dir 'package-lock.json')
+    # The root package ships no lockfile (npm install); web/ has one (npm ci).
+    $lock = Get-Item (Join-Path $dir 'package-lock.json') -ErrorAction SilentlyContinue
+    $manifest = if ($lock) { $lock } else { Get-Item (Join-Path $dir 'package.json') }
     $stamp = Get-Item (Join-Path $dir 'node_modules\.package-lock.json') -ErrorAction SilentlyContinue
-    if (-not $stamp -or $lock.LastWriteTime -gt $stamp.LastWriteTime) { Invoke-Npm $dir @('ci', '--no-audit', '--no-fund') }
+    if (-not $stamp -or $manifest.LastWriteTime -gt $stamp.LastWriteTime) {
+      Invoke-Npm $dir @($(if ($lock) { 'ci' } else { 'install' }), '--no-audit', '--no-fund')
+    }
   }
   Invoke-Npm (Join-Path $CoRoot 'web') @('run', 'build')
   if (Get-Command go.exe -ErrorAction SilentlyContinue) {
