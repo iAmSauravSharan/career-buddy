@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { cliSubstitutionNotice, cliUnavailableError, resolveCliOrFallback, type CliResolution } from "@/lib/clis";
 import { careerOpsRoot } from "@/lib/career-ops";
+import { docxToText } from "@/lib/docx-text.mjs";
 import { CAPS } from "@/lib/worker-capabilities.mjs";
 import { scopeFrom } from "@/lib/claude-invocation.mjs";
 import { fencingReport } from "@/lib/cli-fencing.mjs";
@@ -88,18 +89,29 @@ export async function POST(req: Request) {
       // one below, which would wrongly say Claude is missing (#4607).
       resolved = resolveCliOrFallback(cliId);
       if (!resolved) return Response.json(cliUnavailableError(cliId), { status: 404 });
-      // Reading a PDF/DOCX from a path needs the CLI's file tool, which only Claude
+      // Reading a PDF from a path needs the CLI's file tool, which only Claude
       // is granted here. Tell non-Claude users plainly instead of failing opaquely.
       // Judged on the CLI that will actually run: a stale saved id falls back to
       // the sole installed CLI, and that may well be Claude.
-      if (resolved.spec.id !== "claude" && /\.(pdf|docx)$/i.test(file.name)) {
-        return Response.json({ error: "PDF upload needs Claude Code — paste your CV text instead." }, { status: 400 });
+      if (/\.docx$/i.test(file.name)) {
+        // Extracted here and sent as text, so it works with any CLI: the CLI's
+        // read-only Read tool rejects binary files, so handing it the .docx path
+        // always came back unreadable.
+        const text = docxToText(Buffer.from(await file.arrayBuffer()));
+        if (!text) {
+          return Response.json({ error: "Couldn't read that Word file. Save it as PDF, or paste your CV text instead." }, { status: 400 });
+        }
+        promptSource = TEXT_SRC(text);
+      } else {
+        if (resolved.spec.id !== "claude" && /\.pdf$/i.test(file.name)) {
+          return Response.json({ error: "PDF upload needs Claude Code — paste your CV text instead." }, { status: 400 });
+        }
+        const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || ".pdf").toLowerCase();
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-cv-"));
+        tempFile = path.join(dir, `cv${ext}`); // outside the repo, basename-only
+        fs.writeFileSync(tempFile, Buffer.from(await file.arrayBuffer()), { mode: 0o600 }); // PII → owner-only
+        promptSource = FILE_SRC(tempFile);
       }
-      const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || ".pdf").toLowerCase();
-      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-cv-"));
-      tempFile = path.join(dir, `cv${ext}`); // outside the repo, basename-only
-      fs.writeFileSync(tempFile, Buffer.from(await file.arrayBuffer()), { mode: 0o600 }); // PII → owner-only
-      promptSource = FILE_SRC(tempFile);
     } else {
       return Response.json({ error: "unsupported content-type" }, { status: 400 });
     }
@@ -226,6 +238,12 @@ export async function POST(req: Request) {
             if (obj.type === "stream_event" && obj.event?.type === "content_block_delta") {
               const text = obj.event.delta?.text;
               if (typeof text === "string") emit(text);
+            } else if (obj.type === "assistant" && obj.error) {
+              // An API failure (e.g. "Not logged in · Please run /login") arrives as
+              // a whole synthetic message, never as deltas, so it used to surface as
+              // a bare no-output. Name it so the user knows what to fix.
+              const reason = obj.error === "authentication_failed" ? "not-logged-in" : "cli-error";
+              emit(`<<cv:error>>${JSON.stringify({ reason })}`);
             }
           } catch {
             /* partial / non-json line */
