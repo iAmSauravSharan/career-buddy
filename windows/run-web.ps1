@@ -34,6 +34,23 @@ if (-not (Test-Path $firstRun)) {
   } catch { Log "first-run setup failed: $($_.Exception.Message)" } finally { Pop-Location }
 }
 
+# A "Career Buddy" shortcut on this user's own Desktop (follows OneDrive redirection).
+# Created once; if the user deletes it, it stays deleted.
+$desktopDone = Join-Path $CoState 'desktop-shortcut.done'
+if (-not (Test-Path $desktopDone)) {
+  try {
+    $lnk = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Career Buddy.lnk'))
+    $lnk.TargetPath       = Join-Path $env:WINDIR 'System32\wscript.exe'
+    $lnk.Arguments        = "`"$(Join-Path $PSScriptRoot 'app.vbs')`""
+    $lnk.WorkingDirectory = $CoRoot
+    $lnk.IconLocation     = "$(Join-Path $PSScriptRoot 'career-ops.ico'),0"
+    $lnk.Description      = 'Career Buddy job search dashboard'
+    $lnk.Save()
+    New-Item -ItemType File -Force -Path $desktopDone | Out-Null
+    Log 'created Desktop shortcut'
+  } catch { Log "Desktop shortcut failed: $($_.Exception.Message)" }
+}
+
 $web    = Join-Path $CoRoot 'web'
 $jobs   = Join-Path $web 'scripts\scheduled-jobs-runner.mjs'
 $server = $null; $scan = $null; $nextScan = (Get-Date).AddMinutes(1)

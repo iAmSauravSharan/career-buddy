@@ -13,7 +13,7 @@
 | `%USERPROFILE%\Documents\career-ops` | each user's CV, profile, tracker, reports, `.env` |
 | `%LOCALAPPDATA%\career-ops` | each user's log and app window profile |
 
-Shortcuts for everyone: **Career Buddy** on the public Desktop, a **Career Buddy** Start Menu folder (app + terminal dashboard), and **Career Buddy background** in the all-users Startup folder. The dashboard for an account runs at `http://localhost:{3000 + last part of its SID mod 1000}`.
+Shortcuts for everyone: **Career Buddy** on each user's own Desktop (created by the background worker at their first sign-in), a **Career Buddy** Start Menu folder (app + terminal dashboard), and **Career Buddy background** in the all-users Startup folder. The dashboard for an account runs at `http://localhost:{3000 + last part of its SID mod 1000}`.
 
 ## Install / update
 
