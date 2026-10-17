@@ -41,7 +41,7 @@ export function addOffersToPipeline(offers: DiscoveredOffer[]): Promise<AddResul
   }
 
   const scanUrl = pathToFileURL(rootScript("scan")).href;
-  const localTodayUrl = pathToFileURL(path.join(careerOpsRoot(), "lib", "local-today.mjs")).href;
+  const localTodayUrl = pathToFileURL(rootScript(path.join("lib", "local-today"))).href;
   const code = `
 import { appendToPipeline, appendToScanHistory } from ${JSON.stringify(scanUrl)};
 import { localToday } from ${JSON.stringify(localTodayUrl)};

@@ -54,6 +54,14 @@ export function CvIngest({ onSaved }: { onSaved?: () => void }) {
         setPhase("error");
         return;
       }
+      if (!r.ok) {
+        // The route's own refusals (unreadable Word file, PDF without Claude…)
+        // are JSON with a user-facing message; show it rather than a generic one.
+        const body = (await r.json().catch(() => null)) as { error?: string } | null;
+        setErr(body?.error || `Upload failed (HTTP ${r.status}).`);
+        setPhase("error");
+        return;
+      }
       if (!r.body) {
         setErr("No response.");
         setPhase("error");
@@ -68,7 +76,13 @@ export function CvIngest({ onSaved }: { onSaved?: () => void }) {
         buf += dec.decode(value, { stream: true });
         const parsed = parseCvStream(buf);
         if (parsed.error) {
-          setErr(parsed.error === "unreadable" ? "I couldn't read text from that file (it may be a scanned image). Paste the text instead." : "Couldn't parse the CV — paste the text instead.");
+          setErr(
+            parsed.error === "unreadable"
+              ? "I couldn't read text from that file (it may be a scanned image). Paste the text instead."
+              : parsed.error === "not-logged-in"
+                ? "Claude Code isn't signed in on this computer account. Open a terminal, run `claude`, sign in, then try again — or paste your CV text instead."
+                : "Couldn't parse the CV — paste the text instead.",
+          );
           setPhase("error");
           return;
         }
