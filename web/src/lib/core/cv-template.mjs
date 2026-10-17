@@ -41,8 +41,9 @@ import { BASE_CV_TEMPLATE } from "../run-prompts.mjs";
  * @param {string} root Absolute path to the career-ops checkout (careerOpsRoot()).
  * @returns {Promise<string>} Repo-relative template path, forward-slashed.
  */
-export async function resolveCvTemplate(root) {
-  const file = path.join(root, "cv-templates.mjs");
+export async function resolveCvTemplate(root, codeRoot = root) {
+  // cv-templates.mjs is engine code; `root` is only where the user's profile and packs live.
+  const file = path.join(codeRoot, "cv-templates.mjs");
   try {
     const mod = await import(/* webpackIgnore: true */ pathToFileURL(file).href);
     if (typeof mod?.resolveTemplate !== "function") return BASE_CV_TEMPLATE;

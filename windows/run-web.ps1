@@ -60,10 +60,30 @@ function Sync-CoSystemLayer {
   robocopy (Join-Path $CoRoot 'modes') (Join-Path $CoData 'modes') @rc /XF _profile.md _custom.md _brief.md | Out-Null
   robocopy (Join-Path $CoRoot 'templates') (Join-Path $CoData 'templates') @rc | Out-Null
   robocopy (Join-Path $CoRoot 'batch') (Join-Path $CoData 'batch') batch-prompt.md @rc | Out-Null
-  robocopy $CoRoot $CoData AGENTS.md CLAUDE.md DATA_CONTRACT.md @rc | Out-Null
+  # No /E here: with a file filter it would recreate the whole repo's folder tree, empty.
+  robocopy $CoRoot $CoData AGENTS.md CLAUDE.md DATA_CONTRACT.md /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
+  # Clean up empty repo-shaped folders (and stray AGENTS.md files) an earlier version left behind.
+  foreach ($n in 'dashboard','docs','evals','examples','fonts','lib','node_modules','plugins','plugins-registry','providers','scaffolder','scripts','seeds','test-fixtures','tests','utils','web','windows','data-static') {
+    $p = Join-Path $CoData $n
+    if ((Test-Path $p) -and -not (Get-ChildItem $p -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'AGENTS.md' })) {
+      Remove-Item $p -Recurse -Force -ErrorAction SilentlyContinue
+    }
+  }
   Log 'synced system layer (modes, templates) into the data root'
 }
 Sync-CoSystemLayer
+
+# README step 4: the application tracker. Without this file merge-tracker has nothing to
+# merge into and silently drops every evaluation's row.
+$tracker = Join-Path $CoData 'data\applications.md'
+if (-not (Test-Path $tracker) -and -not (Test-Path (Join-Path $CoData 'applications.md'))) {
+  Set-Content -Path $tracker -Encoding UTF8 -Value @(
+    '# Applications Tracker', '',
+    '| # | Date | Company | Role | Score | Status | PDF | Report | Notes |',
+    '|---|------|---------|------|-------|--------|-----|--------|-------|'
+  )
+  Log 'created data\applications.md'
+}
 
 $web    = Join-Path $CoRoot 'web'
 $jobs   = Join-Path $web 'scripts\scheduled-jobs-runner.mjs'
