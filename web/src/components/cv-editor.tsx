@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { SkillGaps } from "@/components/skill-gaps";
 import remarkGfm from "remark-gfm";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Upload, X } from "lucide-react";
+import { CvIngest } from "@/components/cv/cv-ingest";
 import { cn } from "@/lib/cn";
 
 export function CvEditor() {
@@ -14,6 +15,10 @@ export function CvEditor() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  // Upload a CV file (PDF / Word / .md / .txt) or paste one in to replace cv.md.
+  // The first-run screen is the only other place this lives, and it disappears
+  // once cv.md exists.
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     fetch("/api/cv")
@@ -49,6 +54,17 @@ export function CvEditor() {
     }
   }
 
+  function imported(markdown: string) {
+    // CvIngest already wrote cv.md; show it here as the saved version.
+    setContent(markdown);
+    setExists(true);
+    setDirty(false);
+    setImporting(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    window.dispatchEvent(new CustomEvent("co-cv-saved"));
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="flex items-end justify-between gap-4">
@@ -59,6 +75,16 @@ export function CvEditor() {
             {!exists && loaded && <span className="ml-1 text-faint">No cv.md yet — start typing to create it.</span>}
           </p>
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setImporting((v) => !v)}
+          aria-expanded={importing}
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand/40 hover:text-brand max-sm:min-h-[44px]"
+        >
+          {importing ? <X className="size-4" /> : <Upload className="size-4" />}
+          {importing ? "Cancel upload" : "Upload CV"}
+        </button>
         <button
           type="button"
           onClick={save}
@@ -73,7 +99,19 @@ export function CvEditor() {
           {saving ? <Loader2 className="size-4 animate-spin" /> : saved ? <Check className="size-4" /> : null}
           {saved ? "Saved" : "Save"}
         </button>
+        </div>
       </div>
+
+      {importing && (
+        <section aria-label="Upload a CV" className="mt-6 rounded-2xl border border-border bg-surface/40 p-5">
+          <h2 className="text-sm font-medium text-foreground">Upload a new CV</h2>
+          <p className="mt-1 mb-4 text-[13px] text-muted">
+            Drop or pick a PDF, Word (.docx), .md or .txt file, or paste the text. You review it before it is saved.
+            {exists && content.trim() && <span className="text-amber-600 dark:text-amber-400"> Saving replaces your current CV.</span>}
+          </p>
+          <CvIngest stay onSaved={imported} />
+        </section>
+      )}
 
       {!loaded ? (
         <div className="mt-6 text-sm text-muted">Loading…</div>

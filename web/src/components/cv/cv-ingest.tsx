@@ -28,7 +28,9 @@ const STYLE = `
 .co-cvtrace{animation:co-rise .4s ease both}
 `;
 
-export function CvIngest({ onSaved }: { onSaved?: () => void }) {
+// `stay`: used from the CV editor to replace an existing CV. Saving then hands the
+// new markdown back through onSaved instead of jumping to the first-run Explore scan.
+export function CvIngest({ onSaved, stay = false }: { onSaved?: (markdown: string) => void; stay?: boolean }) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("input");
   const [paste, setPaste] = useState("");
@@ -179,7 +181,14 @@ export function CvIngest({ onSaved }: { onSaved?: () => void }) {
       setPhase("review");
       return;
     }
-    onSaved?.();
+    onSaved?.(md);
+    if (stay) {
+      setMd("");
+      setSeed(null);
+      setPaste("");
+      setPhase("input");
+      return;
+    }
     // WOW #1 — land in the Explorer with the CV-derived filters in the URL + run=1,
     // so the Explorer auto-fires the FREE scan itself (robust, no push/replaceState race).
     // GENEROUS first scan so it never comes back empty (that would kill the wow): roles
@@ -320,7 +329,7 @@ export function CvIngest({ onSaved }: { onSaved?: () => void }) {
           className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground shadow-sm transition hover:brightness-110 disabled:opacity-60"
         >
           {phase === "saving" ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-          Save &amp; find my matches
+          {stay ? "Save as my CV" : <>Save &amp; find my matches</>}
         </button>
         <button
           type="button"
