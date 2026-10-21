@@ -1,0 +1,29 @@
+{
+  "name": "@career-buddy/backend",
+  "version": "0.15.0",
+  "private": true,
+  "description": "career-buddy API server: the HTTP surface over the career-ops engine.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "gen:routes": "node scripts/gen-routes.mjs",
+    "typecheck": "node scripts/gen-routes.mjs --check && tsc --noEmit",
+    "test": "node --experimental-strip-types --test \"tests/**/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "hono": "^4.13.13",
+    "js-yaml": "^5.4.1",
+    "playwright-core": "^1.61.0",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "25.9.5",
+    "typescript": "7.0.2"
+  }
+}

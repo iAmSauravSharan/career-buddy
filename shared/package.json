@@ -1,0 +1,10 @@
+{
+  "name": "@career-buddy/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure helpers and wire types shared by the career-buddy frontend and backend. No Node built-ins, no I/O.",
+  "type": "module",
+  "dependencies": {
+    "js-yaml": "^5.4.1"
+  }
+}
