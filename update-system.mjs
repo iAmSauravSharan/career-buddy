@@ -543,6 +543,8 @@ const SYSTEM_PATHS = [
   'utils/token-tracker.mjs',
   'batch-tailor.mjs',
   'dashboard/',
+  // career-buddy fork: machine-wide Windows installer and launchers.
+  'windows/',
   'templates/',
   'config/cv-facts.example.json',
   'fonts/',
