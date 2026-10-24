@@ -62,11 +62,11 @@ for (const { file, score: scoreLine, decision: decisionLine, lede, apply: applyW
   });
 }
 
-const headerMod = join(ROOT, 'web', 'src', 'lib', 'report-header.mjs');
-if (!existsSync(join(ROOT, 'web', 'src'))) {
+const headerMod = join(ROOT, 'shared', 'src', 'report-header.mjs');
+if (!existsSync(join(ROOT, 'frontend', 'src'))) {
   warn('web/ not present in this checkout — skipping localized decision parser checks');
 } else if (!existsSync(headerMod)) {
-  fail('web/ exists but web/src/lib/report-header.mjs is missing — the decision parser cannot be checked (moved?)');
+  fail('web/ exists but shared/src/report-header.mjs is missing — the decision parser cannot be checked (moved?)');
 } else {
   const { readReport } = await import(pathToFileURL(headerMod).href);
 

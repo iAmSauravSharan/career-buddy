@@ -25,9 +25,9 @@ function check(name, fn) {
 
 const { hasEmbeddedJdArchive, extractStrippedJdSection } = await load('check-jd-archive.mjs');
 const { extractKeywords } = await load('keyword-match.mjs');
-const { readMachineSummary, cardReason } = await load('web/src/lib/machine-summary.mjs');
-const { splitSections, verdictReason, isVerdictHeading } = await load('web/src/lib/report-sections.mjs');
-const { parseReportEnvelope } = await load('web/src/lib/report-envelope.mjs');
+const { readMachineSummary, cardReason } = await load('shared/src/machine-summary.mjs');
+const { splitSections, verdictReason, isVerdictHeading } = await load('shared/src/report-sections.mjs');
+const { parseReportEnvelope } = await load('backend/src/lib/report-envelope.mjs');
 
 function templateHeader(text, opener) {
   const start = text.indexOf(opener);

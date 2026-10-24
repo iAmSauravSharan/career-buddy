@@ -11,21 +11,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMainModule } from "../../lib/is-main-module.mjs";
+import { listTree } from "../../lib/walk-tree.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.join(here, "..", "src");
 const routesDir = path.join(srcDir, "routes");
 const outFile = path.join(srcDir, "routes.gen.ts");
-
-function walk(dir) {
-  const out = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...walk(full));
-    else if (entry.name === "route.ts") out.push(full);
-  }
-  return out;
-}
 
 // Static segments sort before parameters so `/a/b` never loses to `/a/:x`.
 function sortKey(urlPath) {
@@ -33,7 +25,8 @@ function sortKey(urlPath) {
 }
 
 export function renderRoutes() {
-  const entries = walk(routesDir)
+  const entries = listTree(routesDir, { match: /route\.ts$/ })
+    .filter((file) => path.basename(file) === "route.ts")
     .map((file) => {
       const rel = path.relative(routesDir, path.dirname(file)).split(path.sep).join("/");
       const urlPath = `/api/${rel}`.replace(/\[([^\]]+)\]/g, ":$1");
@@ -55,8 +48,14 @@ export function renderRoutes() {
   return lines.join("\n");
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isMain) {
+if (isMainModule(import.meta.url) && (process.argv.includes('--help') || process.argv.includes('-h'))) {
+  console.log(`Usage: node scripts/gen-routes.mjs [--check]
+
+Writes src/routes.gen.ts from src/routes/**/route.ts.
+
+  --check   exit 1 instead of writing when the table is stale
+  --help    show this help`);
+} else if (isMainModule(import.meta.url)) {
   const next = renderRoutes();
   const current = fs.existsSync(outFile) ? fs.readFileSync(outFile, "utf8") : "";
   if (process.argv.includes("--check")) {

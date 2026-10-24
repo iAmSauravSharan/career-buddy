@@ -63,7 +63,7 @@ function Sync-CoSystemLayer {
   # No /E here: with a file filter it would recreate the whole repo's folder tree, empty.
   robocopy $CoRoot $CoData AGENTS.md CLAUDE.md DATA_CONTRACT.md /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NP | Out-Null
   # Clean up empty repo-shaped folders (and stray AGENTS.md files) an earlier version left behind.
-  foreach ($n in 'dashboard','docs','evals','examples','fonts','lib','node_modules','plugins','plugins-registry','providers','scaffolder','scripts','seeds','test-fixtures','tests','utils','web','windows','data-static','.agents','.antigravitycli','.claude','.claude-plugin','.codex-plugin','.github','.grok','.kimi','.opencode','.qwen','.well-known','.git') {
+  foreach ($n in 'dashboard','docs','evals','examples','fonts','lib','node_modules','plugins','plugins-registry','providers','scaffolder','scripts','seeds','test-fixtures','tests','utils','web','frontend','backend','shared','windows','data-static','.agents','.antigravitycli','.claude','.claude-plugin','.codex-plugin','.github','.grok','.kimi','.opencode','.qwen','.well-known','.git') {
     $p = Join-Path $CoData $n
     if ((Test-Path $p) -and -not (Get-ChildItem $p -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'AGENTS.md' })) {
       Remove-Item $p -Recurse -Force -ErrorAction SilentlyContinue
@@ -85,9 +85,13 @@ if (-not (Test-Path $tracker) -and -not (Test-Path (Join-Path $CoData 'applicati
   Log 'created data\applications.md'
 }
 
-$web    = Join-Path $CoRoot 'web'
-$jobs   = Join-Path $web 'scripts\scheduled-jobs-runner.mjs'
-$server = $null; $scan = $null; $nextScan = (Get-Date).AddMinutes(1)
+$web    = Join-Path $CoRoot 'frontend'
+$apiDir = Join-Path $CoRoot 'backend'
+$jobs   = Join-Path $apiDir 'scripts\scheduled-jobs-runner.mjs'
+$tsx    = Join-Path $apiDir 'node_modules\tsx\dist\cli.mjs'
+# Both servers inherit these: the API reads HOST/PORT, the UI reads BACKEND_URL.
+$env:HOST = '127.0.0.1'; $env:PORT = "$CoApiPort"; $env:BACKEND_URL = "http://127.0.0.1:$CoApiPort"
+$server = $null; $api = $null; $scan = $null; $nextScan = (Get-Date).AddMinutes(1)
 $buildIdFile = Join-Path $web '.next\BUILD_ID'
 function Get-BuildId { (Get-Content $buildIdFile -Raw -ErrorAction SilentlyContinue) }
 $buildId = Get-BuildId
@@ -100,6 +104,12 @@ while ($true) {
     Sync-CoSystemLayer
     taskkill /PID $server.Id /T /F | Out-Null
     $server.WaitForExit(10000) | Out-Null
+    if ($api -and -not $api.HasExited) { taskkill /PID $api.Id /T /F | Out-Null; $api.WaitForExit(10000) | Out-Null }
+  }
+  if (-not $api -or $api.HasExited) {
+    if ($api) { Log "api server exited ($($api.ExitCode)); restarting" }
+    Log "starting api server on 127.0.0.1:$CoApiPort"
+    $api = Start-Process cmd.exe -ArgumentList '/c', "`"`"$CoNode`" `"$tsx`" src\server.ts >> `"$CoLog`" 2>&1`"" -WorkingDirectory $apiDir -WindowStyle Hidden -PassThru
   }
   if ($current) { $buildId = $current }
   if (-not $server -or $server.HasExited) {

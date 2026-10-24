@@ -43,11 +43,11 @@ process.env.CAREER_OPS_SCAN_HISTORY = historyPath;
 
 const { planExpiredHistoryRows } = await import('../liveness-core.mjs');
 const { normalizeUrlForDedup, shouldDedupScanHistoryRow } = await import('../scan.mjs');
-// web/ is not in every checkout, and an unguarded import of it crashes the whole
+// The web app (shared/) is not in every checkout, and an unguarded import of it crashes the whole
 // suite there rather than skipping one case (#3269). The core half of this file
 // does not need web/ at all; only the end-to-end feed assertion does.
-const WEB_SRC = join(ROOT, 'web', 'src');
-const WEB_WHATS_NEW = join(WEB_SRC, 'lib', 'whats-new.mjs');
+const WEB_SRC = join(ROOT, 'shared', 'src');
+const WEB_WHATS_NEW = join(WEB_SRC, 'whats-new.mjs');
 const HAS_WEB = existsSync(WEB_SRC);
 const { collectWhatsNew } = HAS_WEB
   ? await import(pathToFileURL(WEB_WHATS_NEW).href)

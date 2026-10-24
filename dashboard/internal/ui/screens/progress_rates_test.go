@@ -17,7 +17,7 @@ import (
 // response, interview and offer rates were all 0.0%: the dashboard reporting
 // the search as failing before it had begun.
 //
-// Mirrors rateOrNull() in web/src/lib/analytics/view-model.mjs, which gates each
+// Mirrors rateOrNull() in shared/src/analytics/view-model.mjs, which gates each
 // rate on the count it was taken over rather than on its own value.
 
 func progressWith(m model.ProgressMetrics) ProgressModel {

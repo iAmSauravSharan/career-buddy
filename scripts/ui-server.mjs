@@ -8,12 +8,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { getCareerOpsRoot } from "../path-resolver.mjs";
-import { isWildcardAddress, planNextRun } from "../web/src/lib/bind-host.mjs";
+import { isWildcardAddress, planNextRun } from "../frontend/src/lib/bind-host.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
-const webDir = path.join(rootDir, "web");
+const webDir = path.join(rootDir, "frontend");
+const apiDir = path.join(rootDir, "backend");
 
 // Port and host validation helpers
 function parsePort(val) {
@@ -99,7 +100,7 @@ try {
 } catch (err) {
   if (err.code !== "MODULE_NOT_FOUND") throw err;
   console.error("\x1b[31mError:\x1b[0m Web UI dependencies are not installed (next was not found from web/).");
-  console.error("Install them once, then retry:  npm --prefix web ci\n");
+  console.error("Install them once, then retry:  npm --prefix shared ci && npm --prefix backend ci && npm --prefix frontend ci\n");
   process.exit(1);
 }
 
@@ -124,7 +125,7 @@ if (!plan.ok) {
 }
 if (host !== "127.0.0.1" && plan.grantsNoNewHost) {
   console.error(`\x1b[31mError:\x1b[0m --host cannot open the UI to the network without CAREER_OPS_WEB_ALLOWED_HOSTS opt-in.`);
-  console.error(`To allow network access, set CAREER_OPS_WEB_ALLOWED_HOSTS="${host}". See web/README.md.\n`);
+  console.error(`To allow network access, set CAREER_OPS_WEB_ALLOWED_HOSTS="${host}". See frontend/README.md.\n`);
   process.exit(1);
 }
 
@@ -197,8 +198,23 @@ const childEnv = {
   CAREER_OPS_ROOT: dataRoot,
 };
 
-// Spawn Next.js server directly via node executable (no shell parsing, avoiding shell escaping issues)
+// The API server: loopback only, whatever the UI binds, because only the UI's
+// own server talks to it (pages server-side, browser calls through its proxy).
 const isWindows = process.platform === "win32";
+const apiPort = Number(process.env.CAREER_OPS_API_PORT) || port + 1;
+if (!(await checkPortAvailable(apiPort, "127.0.0.1"))) {
+  console.error(`\x1b[31mError:\x1b[0m API port ${apiPort} is already in use. Set CAREER_OPS_API_PORT to another port.\n`);
+  process.exit(1);
+}
+childEnv.BACKEND_URL = `http://127.0.0.1:${apiPort}`;
+const api = spawn(process.execPath, [path.join(apiDir, "node_modules", "tsx", "dist", "cli.mjs"), "src/server.ts"], {
+  cwd: apiDir,
+  env: { ...childEnv, HOST: "127.0.0.1", PORT: String(apiPort) },
+  stdio: "inherit",
+  shell: false,
+});
+
+// Spawn Next.js server directly via node executable (no shell parsing, avoiding shell escaping issues)
 const serverScript = path.join(webDir, "server.mjs");
 const serverArgs = [serverScript, "dev", "-p", String(port)];
 if (bindHost !== "127.0.0.1") {
@@ -214,36 +230,44 @@ const child = spawn(process.execPath, serverArgs, {
 
 setTimeout(pollReady, 1000);
 
-// Graceful exit
+// Graceful exit: stop both servers, whichever side asked.
 let shuttingDown = false;
+function stopProcess(proc) {
+  if (!proc || proc.killed || proc.exitCode !== null) return;
+  if (isWindows) {
+    try {
+      spawnSync("taskkill", ["/pid", proc.pid.toString(), "/f", "/t"], { stdio: "ignore" });
+    } catch {}
+  } else {
+    try {
+      process.kill(-proc.pid, "SIGTERM");
+    } catch {
+      proc.kill("SIGTERM");
+    }
+  }
+}
 function cleanup() {
   if (shuttingDown) return;
   shuttingDown = true;
   polling = false;
   console.log("\nShutting down Career-ops UI...");
-  if (child && !child.killed && child.exitCode === null) {
-    if (isWindows) {
-      try {
-        spawnSync("taskkill", ["/pid", child.pid.toString(), "/f", "/t"], { stdio: "ignore" });
-      } catch {}
-    } else {
-      try {
-        process.kill(-child.pid, "SIGTERM");
-      } catch {
-        child.kill("SIGTERM");
-      }
-    }
-  } else {
-    process.exit(0);
-  }
+  stopProcess(api);
+  if (child && !child.killed && child.exitCode === null) stopProcess(child);
+  else process.exit(0);
 }
 
 process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
+api.on("exit", (code, signal) => {
+  if (shuttingDown) return;
+  console.error(`\x1b[31mError:\x1b[0m API server exited ${code === null ? `on ${signal}` : `with code ${code}`}. The output above says why.`);
+  cleanup();
+});
 child.on("exit", (code, signal) => {
   polling = false;
   if (!opened && code !== 0) {
     console.error(`\x1b[31mError:\x1b[0m Web server exited ${code === null ? `on ${signal}` : `with code ${code}`} before it was ready. The output above says why.`);
   }
+  stopProcess(api);
   process.exit(code || 0);
 });

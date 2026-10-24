@@ -31,14 +31,14 @@ const DEFINITION = 'lib/dir-lock.mjs';
 // The web bundle cannot import the core (web/next.config.mjs pins its Turbopack
 // root to web/), so it carries a copy. A copy is a second body only if it can
 // differ, so it is accepted on one condition, checked here as well as in its
-// own parity test (web/tests/lib/dir-lock.test.mjs): byte-for-byte identity.
-const MIRROR = 'web/src/lib/core/dir-lock.mjs';
+// own parity test (backend/tests/lib/dir-lock.test.mjs): byte-for-byte identity.
+const MIRROR = 'backend/src/lib/core/dir-lock.mjs';
 const PROTOCOL_FILES = [DEFINITION, MIRROR];
 
 // Every module git ships, minus the suites: test fixtures stamp owner.json by
 // hand on purpose, to stage the states the lock must survive.
 const shippedCoreModules = () => trackedFiles(ROOT, (rel) => rel.endsWith('.mjs')
-  && !rel.startsWith('tests/') && !rel.startsWith('web/tests/') && rel !== 'test-all.mjs')
+  && !rel.startsWith('tests/') && !/^(frontend|backend|shared)\/tests\//.test(rel) && rel !== 'test-all.mjs')
   .map((abs) => abs.slice(ROOT.length + 1).replace(/\\/g, '/'));
 
 // Comments are stripped first: explaining what the protocol does is not

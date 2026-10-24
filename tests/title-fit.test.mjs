@@ -14,11 +14,11 @@ console.log('\ntitle-fit.mjs — free banded title/profile overlap hint (#3260)'
 // the missing module as a failure. Same three branches as
 // tests/profile-keywords-parity.test.mjs: an absent web/ skips, but a module
 // missing under a present web/ is a move and fails.
-const TITLE_FIT = join(ROOT, 'web', 'src', 'lib', 'title-fit.mjs');
-if (!existsSync(join(ROOT, 'web', 'src'))) {
+const TITLE_FIT = join(ROOT, 'backend', 'src', 'lib', 'title-fit.mjs');
+if (!existsSync(join(ROOT, 'frontend', 'src'))) {
   warn('web/ not present in this checkout — skipping the title-fit checks');
 } else if (!existsSync(TITLE_FIT)) {
-  fail('web/ exists but web/src/lib/title-fit.mjs is missing — the title-fit checks cannot run (moved?)');
+  fail('web/ exists but backend/src/lib/title-fit.mjs is missing — the title-fit checks cannot run (moved?)');
 } else {
   try {
     const m = await import(pathToFileURL(TITLE_FIT).href);

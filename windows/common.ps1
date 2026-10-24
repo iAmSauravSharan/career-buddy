@@ -14,6 +14,8 @@ $CoSid  = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $rid    = [int]($CoSid.Split('-')[-1])
 # Local account IDs start at 1000 (Admin=1001 -> 3001, surum=1020 -> 3020, ...).
 $CoPort = 3000 + ($rid % 1000)
+# The API server behind the UI: loopback only, one per account like the UI port.
+$CoApiPort = 4000 + ($rid % 1000)
 $CoUrl  = "http://localhost:$CoPort"
 $CoData = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'career-ops'
 $CoState = Join-Path $env:LOCALAPPDATA 'career-ops'

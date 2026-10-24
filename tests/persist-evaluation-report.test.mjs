@@ -68,11 +68,11 @@ test("persist-evaluation-report -h matches --help", () => {
 });
 test("tracker addition builders in lib and web agree", async (t) => {
   // web/ is excluded from core-only installs (#3269). Skip rather than crash.
-  if (!existsSync(join(ROOT, "web", "src"))) {
+  if (!existsSync(join(ROOT, "frontend", "src"))) {
     t.skip("web/ not present");
     return;
   }
-  const { trackerTsvLine: webLine } = await import("../web/src/lib/report-persist.mjs");
+  const { trackerTsvLine: webLine } = await import("../backend/src/lib/report-persist.mjs");
   const rows = [
     ROW,
     { ...ROW, via: "Hays", url: "https://example.com/jobs/2" },

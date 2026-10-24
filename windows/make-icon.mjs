@@ -1,10 +1,10 @@
-// Renders web/src/app/icon.svg into windows/career-ops.ico (PNG-in-ICO, 256/48/32/16).
+// Renders frontend/src/app/icon.svg into windows/career-ops.ico (PNG-in-ICO, 256/48/32/16).
 import { chromium } from 'playwright';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
-const svg = readFileSync(join(here, '..', 'web', 'src', 'app', 'icon.svg'), 'utf8');
+const svg = readFileSync(join(here, '..', 'frontend', 'src', 'app', 'icon.svg'), 'utf8');
 const sizes = [256, 48, 32, 16];
 const browser = await chromium.launch();
 const pngs = [];

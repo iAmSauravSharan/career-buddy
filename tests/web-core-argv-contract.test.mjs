@@ -40,34 +40,34 @@ console.log('\nweb → core argv contract');
 //                  bottom stays complete.
 const CALL_SITES = [
   {
-    source: 'web/src/app/api/followups/route.ts',
+    source: 'backend/src/routes/followups/route.ts',
     script: 'followup-cadence.mjs',
     args: ['--json'],
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/followups/cadence/route.ts',
+    source: 'backend/src/routes/followups/cadence/route.ts',
     script: 'followup-cadence.mjs',
     args: ['--json'],
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/doctor/route.ts',
+    source: 'backend/src/routes/doctor/route.ts',
     script: 'doctor.mjs',
     args: ['--json'],
     probe: 'run',
   },
   {
     // Before the set-status probe, which moves row 1 off Applied.
-    source: 'web/src/lib/core-cli.ts',
-    argvSource: 'web/src/app/api/followups/seed/route.ts',
+    source: 'backend/src/lib/core-cli.ts',
+    argvSource: 'backend/src/routes/followups/seed/route.ts',
     script: 'followup-seed.mjs',
     args: ['1', '--json'],
     probe: 'run',
   },
   {
-    source: 'web/src/lib/core-cli.ts',
-    argvSource: 'web/src/app/api/status/route.ts',
+    source: 'backend/src/lib/core-cli.ts',
+    argvSource: 'backend/src/routes/status/route.ts',
     script: 'set-status.mjs',
     // The route builds ['--row', row, canon, '--source', 'web', '--detach-jd-archive', '--json'];
     // row 1 and Responded are the fixture tracker's row and a canonical state.
@@ -75,13 +75,13 @@ const CALL_SITES = [
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/portals/verify/route.ts',
+    source: 'backend/src/routes/portals/verify/route.ts',
     script: 'verify-portals.mjs',
     args: [],
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/tracker/delete/route.ts',
+    source: 'backend/src/routes/tracker/delete/route.ts',
     script: 'tracker.mjs',
     // --dry-run is conditional in the route (added when the caller asks for a
     // preview); passing it keeps the probe off the fixture tracker.
@@ -89,14 +89,14 @@ const CALL_SITES = [
     probe: 'run',
   },
   {
-    source: 'web/src/lib/core/scan.ts',
+    source: 'backend/src/lib/core/scan.ts',
     script: 'scan-ats-full.mjs',
     // The values are the route's own defaults; only the flag names matter here.
     args: ['--dry-run', '--since', '7', '--ats', 'greenhouse', '--limit', '150', '--json'],
     probe: 'flags-only',
   },
   {
-    source: 'web/src/app/api/quiet-companies/route.ts',
+    source: 'backend/src/routes/quiet-companies/route.ts',
     script: 'rejection-latency.mjs',
     // The route parses stdout, so the payload is the contract, not just exit 0.
     expectJson: true,
@@ -107,7 +107,7 @@ const CALL_SITES = [
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/stats/route.ts',
+    source: 'backend/src/routes/stats/route.ts',
     script: 'stats.mjs',
     // NO FLAGS. stats.mjs prints JSON by default and rejects `--json` outright
     // ("unrecognized flag(s): --json"), unlike every other route here — which is
@@ -117,7 +117,7 @@ const CALL_SITES = [
     probe: 'json-any-exit',
   },
   {
-    source: 'web/src/app/api/patterns/route.ts',
+    source: 'backend/src/routes/patterns/route.ts',
     script: 'analyze-patterns.mjs',
     // Exits 1 on this one-row fixture, by design: it is under its minimum
     // sample and says so in a JSON payload the route renders. The contract is
@@ -126,7 +126,7 @@ const CALL_SITES = [
     probe: 'json-any-exit',
   },
   {
-    source: 'web/src/app/api/keyword-match/route.ts',
+    source: 'backend/src/routes/keyword-match/route.ts',
     script: 'keyword-match.mjs',
     // {{report}} is replaced with the fixture report below. This script takes a
     // FILE as its first argument, so unlike every other site here the argv is
@@ -136,7 +136,7 @@ const CALL_SITES = [
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/upskill/route.ts',
+    source: 'backend/src/routes/upskill/route.ts',
     script: 'upskill.mjs',
     // No flags: upskill.mjs prints JSON by default and rejects a --json flag,
     // the same convention stats.mjs and company-history.mjs follow while the
@@ -145,7 +145,7 @@ const CALL_SITES = [
     probe: 'run',
   },
   {
-    source: 'web/src/app/api/company-history/route.ts',
+    source: 'backend/src/routes/company-history/route.ts',
     script: 'company-history.mjs',
     // The fixture tracker's own company, so the probe exercises a real lookup
     // rather than the not-found fallback.
@@ -153,7 +153,7 @@ const CALL_SITES = [
     probe: 'run',
   },
   {
-    source: 'web/src/lib/core/pipeline.ts',
+    source: 'backend/src/lib/core/pipeline.ts',
     script: null,
     args: [],
     probe: 'none',
@@ -172,22 +172,22 @@ const CALL_SITES = [
  * @returns {{skipped: boolean}}
  */
 export function verifyWebStaticSources({ root = ROOT, reportPass = pass, reportFail = fail } = {}) {
-  // web/ ships as its own release-please component and is excluded from
-  // SYSTEM_PATHS wholesale (validate-system-paths-coverage.mjs,
-  // EXCLUDE_PREFIXES = ['web/']), so `update-system.mjs apply` never installs
-  // it. An install created that way has no web/ at all, and the two checks
+  // The web app (backend/ is where every core-script spawn lives) is excluded
+  // from SYSTEM_PATHS wholesale (validate-system-paths-coverage.mjs,
+  // EXCLUDE_PREFIXES), so `update-system.mjs apply` never installs it. An
+  // install created that way has no backend/ at all, and the two checks
   // below read the web sources unconditionally: readFileSync threw ENOENT and
   // took the whole suite with it, so the argv probes above — which need only
   // the core scripts and are the point of this file — reported nothing either.
-  const webRoot = join(root, 'web');
+  const webRoot = join(root, 'backend');
   if (!existsSync(webRoot)) {
-    reportPass('web/ is not present in this checkout — skipping static argv-source contract');
+    reportPass('backend/ is not present in this checkout — skipping static argv-source contract');
     return { skipped: true };
   }
 
   const webSrcRoot = join(webRoot, 'src');
   if (!existsSync(webSrcRoot)) {
-    reportFail('web/ exists but web/src is missing — cannot verify the static argv-source contract');
+    reportFail('backend/ exists but backend/src is missing — cannot verify the static argv-source contract');
     return { skipped: false };
   }
 

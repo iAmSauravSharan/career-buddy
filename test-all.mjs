@@ -893,7 +893,7 @@ try {
   // Never copied, at any depth: dependency trees and git metadata. Nothing run
   // from the throwaway copy reads them (module resolution walks up into the
   // real ROOT/node_modules, which is how the root-level exclusion already
-  // worked), and a nested web/node_modules is ~400 MB on a machine that has
+  // worked), and a nested frontend/node_modules is ~400 MB on a machine that has
   // installed the web app's deps — copying it dominated this section (#2387).
   const EXCLUDE_AT_ANY_DEPTH = new Set(['node_modules', '.git']);
 
@@ -16772,7 +16772,7 @@ try {
 }
 
 // ── 55. CORE↔WEB CONTRACT FREEZE ────────────────────────────────
-// The first-party web (web/) READS these exact core formats. This section
+// The first-party web app (backend/, frontend/) READS these exact core formats. This section
 // freezes each surface's canonical shape: a PR that changes a surface must
 // ALSO edit these assertions, which makes the change loud in the diff and
 // forces the web-coordination step (prefer ADDITIVE — append new columns/
@@ -16786,7 +16786,7 @@ try {
   if (trackerSrc.includes(CANONICAL_TRACKER_HEADER)) {
     pass('tracker.mjs writes the canonical 9-col applications.md header');
   } else {
-    fail('tracker.mjs no longer writes the canonical 9-col header — BREAKING for the web reader; coordinate web/ in lockstep');
+    fail('tracker.mjs no longer writes the canonical 9-col header — BREAKING for the web reader; coordinate the web app (backend/) in lockstep');
   }
 
   // 55.1b tracker URL CELL form (#3516). The header label stays `URL`; what
@@ -16841,9 +16841,9 @@ try {
   // href extractCellUrl returns. A reader that keeps the `[label](href)` text
   // treats the row as having no URL anywhere `new URL()` is applied to the
   // cell. The TSV `url` field stays a raw URL. This check is the tracker cell.
-  if (existsSync(join(ROOT, 'web', 'src', 'lib', 'tracker-table.mjs'))) {
+  if (existsSync(join(ROOT, 'backend', 'src', 'lib', 'tracker-table.mjs'))) {
     const { extractCellUrl } = await import(pathToFileURL(join(ROOT, 'tracker-parse.mjs')).href);
-    const { parseApplications } = await import(pathToFileURL(join(ROOT, 'web', 'src', 'lib', 'tracker-table.mjs')).href);
+    const { parseApplications } = await import(pathToFileURL(join(ROOT, 'backend', 'src', 'lib', 'tracker-table.mjs')).href);
     const href = 'https://jobs.example.com/Engineer_(Remote)';
     const cells = [`[workday](${href})`, href, '—'];
     const lines = cells.map((cell, i) =>
@@ -16861,7 +16861,7 @@ try {
       fail(`web tracker reader URL cells ${JSON.stringify(got)} differ from extractCellUrl ${JSON.stringify(expected)}. The markdown-link form has to be extracted in lockstep (#3516)`);
     }
   } else {
-    console.log('   ⏭️  web/ not present (core-only install) — skipping the web URL-column check');
+    console.log('   ⏭️  backend/ not present (core-only install) — skipping the web URL-column check');
   }
 
   // 55.2 scan-history.tsv header prefix (lib/scan-history-columns.mjs, the
@@ -16900,10 +16900,10 @@ try {
   // SKIP (not a funnel stage), so it's excluded there.
   const stateLabels = [...statesSrc.matchAll(/^\s+label:\s*"?([A-Za-z]+)"?\s*$/gm)].map((m) => m[1]);
   const webStatusLists = [
-    { file: 'web/src/lib/format.ts', re: /CANONICAL_STATES\s*=\s*\[([\s\S]*?)\]/, upper: false, exclude: [] },
-    { file: 'web/src/app/actions/registry.ts', re: /CANON_STATUS\s*=\s*\[([\s\S]*?)\]/, upper: false, exclude: [] },
-    { file: 'web/src/app/actions/registry.ts', re: /TAB_VALUES\s*=\s*\[([\s\S]*?)\]/, upper: true, exclude: [] },
-    { file: 'web/src/lib/pipeline-navigation.mjs', re: /PIPELINE_TABS\s*=[^[]*\[([\s\S]*?)\]/, upper: true, exclude: [] },
+    { file: 'shared/src/format.ts', re: /CANONICAL_STATES\s*=\s*\[([\s\S]*?)\]/, upper: false, exclude: [] },
+    { file: 'frontend/src/app/actions/registry.ts', re: /CANON_STATUS\s*=\s*\[([\s\S]*?)\]/, upper: false, exclude: [] },
+    { file: 'frontend/src/app/actions/registry.ts', re: /TAB_VALUES\s*=\s*\[([\s\S]*?)\]/, upper: true, exclude: [] },
+    { file: 'shared/src/pipeline-navigation.mjs', re: /PIPELINE_TABS\s*=[^[]*\[([\s\S]*?)\]/, upper: true, exclude: [] },
     // Analytics now derives its funnel from canonStatus in analytics-metrics;
     // it no longer owns a hardcoded status-list copy to keep in sync.
     // The states ACL used to be checked here too. It moved to its own block
@@ -16941,7 +16941,7 @@ try {
     // The shape that must never pass is a literal table that is INCOMPLETE.
     // That is the only one that fails silently: a state missing from the
     // fallback reads exactly like a state the product does not have.
-    const aclPath = join(ROOT, 'web', 'src', 'lib', 'core', 'states.ts');
+    const aclPath = join(ROOT, 'backend', 'src', 'lib', 'core', 'states.ts');
     if (existsSync(aclPath)) {
       const aclSrc = readFileSync(aclPath, 'utf-8');
       const literal = aclSrc.match(/const FALLBACK[^=]*=\s*\[([\s\S]*?)\n\];/)?.[1];
@@ -16971,7 +16971,7 @@ try {
     // The assistant preamble also enumerates the states in PROSE (the setStatus
     // list + the filterPipeline tab enum). Those drift the same way — the AI
     // couldn't offer to set/filter by Hired — so check them too (#2249).
-    const assistantPath = join(ROOT, 'web', 'src', 'app', 'api', 'assistant', 'route.ts');
+    const assistantPath = join(ROOT, 'backend', 'src', 'routes', 'assistant', 'route.ts');
     if (existsSync(assistantPath)) {
       const src = readFileSync(assistantPath, 'utf-8');
       const proseChecks = [
@@ -17061,19 +17061,19 @@ try {
     } else {
       fail(`the empty-tracker error was lost, so callers that branch on result.error now fall through (#4005): ${JSON.stringify(emptyEmitted)}`);
     }
-    const webFollowups = join(ROOT, 'web', 'src', 'lib', 'followups.ts');
+    const webFollowups = join(ROOT, 'shared', 'src', 'followups.ts');
     if (existsSync(webFollowups)) {
       const webSrc = readFileSync(webFollowups, 'utf-8');
       if (!/export const CADENCE_DEFAULTS/.test(webSrc)) {
-        pass('web/src/lib/followups.ts keeps no hand-copied cadence table (#2369)');
+        pass('shared/src/followups.ts keeps no hand-copied cadence table (#2369)');
       } else {
-        fail('CADENCE_DEFAULTS was reintroduced in web/src/lib/followups.ts — derive from the core instead (#2369)');
+        fail('CADENCE_DEFAULTS was reintroduced in shared/src/followups.ts — derive from the core instead (#2369)');
       }
     }
   }
 
   // 55.3d the web onboarding banner's prereq list must match doctor.mjs.
-  // doctorState() in web/src/lib/career-ops.ts hand-copies USER_LAYER_PREREQS
+  // doctorState() in backend/src/lib/career-ops.ts hand-copies USER_LAYER_PREREQS
   // as a deliberate fast-path (server components can't execFile doctor per
   // render) — if the core gains a fifth prereq, the banner silently stops
   // asking for it and the user believes they're configured. Same mechanism as
@@ -17082,7 +17082,7 @@ try {
     const corePrereqBlock = readFileSync(join(ROOT, 'doctor.mjs'), 'utf-8')
       .match(/const USER_LAYER_PREREQS = \[([\s\S]*?)\n\];/)?.[1] ?? '';
     const corePrereqs = [...corePrereqBlock.matchAll(/path:\s*'([^']+)'/g)].map((m) => m[1]);
-    const webDoctorPath = join(ROOT, 'web', 'src', 'lib', 'career-ops.ts');
+    const webDoctorPath = join(ROOT, 'backend', 'src', 'lib', 'career-ops.ts');
     if (corePrereqs.length > 0 && existsSync(webDoctorPath)) {
       const webPrereqBlock = readFileSync(webDoctorPath, 'utf-8')
         .match(/const prereqs[^=]*=\s*\[([\s\S]*?)\n\s*\];/)?.[1] ?? '';
@@ -17218,18 +17218,21 @@ try {
   }
 
   // 55.5 cross-check: the web parser still speaks the same column names
-  const webParserPath = join(ROOT, 'web', 'src', 'lib', 'career-ops.ts');
+  // The reader lives in the backend; the Application row type it fills, in shared/.
+  const webParserPath = join(ROOT, 'backend', 'src', 'lib', 'career-ops.ts');
+  const webTypesPath = join(ROOT, 'shared', 'src', 'types.ts');
   if (existsSync(webParserPath)) {
-    const webSrc = readFileSync(webParserPath, 'utf-8');
+    const webSrc = readFileSync(webParserPath, 'utf-8')
+      + (existsSync(webTypesPath) ? readFileSync(webTypesPath, 'utf-8') : '');
     const ESSENTIAL_COLS = ['Company', 'Role', 'Score', 'Status'];
     const missingCols = ESSENTIAL_COLS.filter((c) => !webSrc.toLowerCase().includes(c.toLowerCase()));
     if (missingCols.length === 0) {
-      pass('web/src/lib/career-ops.ts still references the essential tracker columns');
+      pass('the web tracker reader (backend career-ops.ts + shared types) still references the essential tracker columns');
     } else {
       fail(`web parser no longer references column(s): ${missingCols.join(', ')} — core and web drifted`);
     }
   } else {
-    warn('web/src/lib/career-ops.ts not found — web layer moved? update contract freeze section');
+    warn('backend/src/lib/career-ops.ts not found — web layer moved? update contract freeze section');
   }
 
   // 55.6 pdf mode must never hand the agent write access (#2185).
@@ -17240,33 +17243,34 @@ try {
   //
   // Asserted on VALUES — the built argv and the built prompt. FIVE source-text
   // versions of this guard were defeated by rewriting route.ts around them (see
-  // web/src/lib/claude-invocation.mjs's header). The one structural rule left is
+  // shared/src/claude-invocation.mjs's header). The one structural rule left is
   // that route.ts may not spell a tool flag itself, which is what stops an inline
   // argv from hiding beside a legitimate claudeCliArgs() call.
   //
   // In the REQUIRED suite on purpose: web-ci.yml is informative-only, so asserting
   // this only there would gate nothing. Importing is safe — these are
   // dependency-free ESM modules and the root suite runs on Node >= 22.13.
-  const webLib = join(ROOT, 'web', 'src', 'lib');
-  const runRoutePath = join(ROOT, 'web', 'src', 'app', 'api', 'run', 'route.ts');
-  if (!existsSync(webLib)) {
-    // Expected for a data-only install: web/ is in no SYSTEM_PATHS entry.
-    warn('web/ not present in this checkout — skipping the pdf write-scope freeze (#2185)');
+  const sharedSrc = join(ROOT, 'shared', 'src');
+  const backendLib = join(ROOT, 'backend', 'src', 'lib');
+  const runRoutePath = join(ROOT, 'backend', 'src', 'routes', 'run', 'route.ts');
+  if (!existsSync(join(ROOT, 'backend'))) {
+    // Expected for a data-only install: the web app is in no SYSTEM_PATHS entry.
+    warn('backend/ not present in this checkout — skipping the pdf write-scope freeze (#2185)');
   } else {
-    // web/ IS here, so a missing file means a move, not an absence — fail rather
-    // than skip, because a skip is how this freeze would silently stop guarding.
+    // backend/ IS here, so a missing file means a move, not an absence — fail
+    // rather than skip, because a skip is how this freeze would silently stop guarding.
     const required = {
-      'claude-invocation.mjs': join(webLib, 'claude-invocation.mjs'),
-      'worker-capabilities.mjs': join(webLib, 'worker-capabilities.mjs'),
-      'cv-envelope.mjs': join(webLib, 'cv-envelope.mjs'),
-      'report-envelope.mjs': join(webLib, 'report-envelope.mjs'),
-      'report-persist.mjs': join(webLib, 'report-persist.mjs'),
-      'run-prompts.mjs': join(webLib, 'run-prompts.mjs'),
+      'claude-invocation.mjs': join(sharedSrc, 'claude-invocation.mjs'),
+      'worker-capabilities.mjs': join(sharedSrc, 'worker-capabilities.mjs'),
+      'cv-envelope.mjs': join(backendLib, 'cv-envelope.mjs'),
+      'report-envelope.mjs': join(backendLib, 'report-envelope.mjs'),
+      'report-persist.mjs': join(backendLib, 'report-persist.mjs'),
+      'run-prompts.mjs': join(backendLib, 'run-prompts.mjs'),
       'api/run/route.ts': runRoutePath,
     };
     const missing = Object.entries(required).filter(([, f]) => !existsSync(f)).map(([name]) => name);
     if (missing.length > 0) {
-      fail(`web/ exists but ${missing.join(', ')} is missing — the #2185 write-scope freeze cannot verify (was it moved?)`);
+      fail(`backend/ exists but ${missing.join(', ')} is missing — the #2185 write-scope freeze cannot verify (was it moved?)`);
     } else {
       let invocation;
       let capabilities;
@@ -17295,27 +17299,33 @@ try {
       // Discovered, not hand-listed: a list silently stops gating whatever is added
       // next, and this section previously covered 4 of the 6 files present.
       let webUnits = [];
-      try {
-        const webLibRoot = join(ROOT, 'web', 'tests', 'lib');
-        // listTree rather than a recursive readdir: a checkout under
-        // web/tests/lib holds another tree's suites, and the parity walk below
-        // skips those the same way (#3762), so the gate must not run them. A
-        // missing root still throws, into the catch below.
-        webUnits = listTree(webLibRoot, { match: /\.test\.mjs$/ })
-          .map((abs) => relative(webLibRoot, abs))
-          .sort()
-          .map((f) => join('web', 'tests', 'lib', f));
-      } catch (err) {
-        // Fail rather than throw to the outer catch, which would skip every value
-        // assertion below while reporting only "freeze section crashed".
-        fail(`web/tests/lib is unreadable (${err.message}) — the #2185 unit suites cannot be gated`);
+      // Every web package's unit suites, each tree only when that package is here.
+      const WEB_TEST_LIBS = ['frontend', 'backend', 'shared']
+        .filter((pkg) => existsSync(join(ROOT, pkg)))
+        .map((pkg) => join(pkg, 'tests', 'lib'));
+      for (const libDir of WEB_TEST_LIBS) {
+        try {
+          const webLibRoot = join(ROOT, libDir);
+          // listTree rather than a recursive readdir: a checkout under a tests/lib
+          // holds another tree's suites, and the parity walk below skips those
+          // the same way (#3762), so the gate must not run them. A missing root
+          // still throws, into the catch below.
+          webUnits.push(...listTree(webLibRoot, { match: /\.test\.mjs$/ })
+            .map((abs) => relative(webLibRoot, abs))
+            .sort()
+            .map((f) => join(libDir, f)));
+        } catch (err) {
+          // Fail rather than throw to the outer catch, which would skip every value
+          // assertion below while reporting only "freeze section crashed".
+          fail(`${libDir} is unreadable (${err.message}) — the #2185 unit suites cannot be gated`);
+        }
       }
       // Three distinct states, so the message never misdescribes the failure: the
       // unreadable case already called fail() above, an empty directory is its own
       // fault, and only a non-empty list is actually run.
       if (webUnits.length === 0) {
-        if (existsSync(join(ROOT, 'web', 'tests', 'lib'))) {
-          fail('web/tests/lib contains no *.test.mjs — the #2185 unit suites are not being gated');
+        if (WEB_TEST_LIBS.some((libDir) => existsSync(join(ROOT, libDir)))) {
+          fail('no web package tests/lib holds a *.test.mjs — the #2185 unit suites are not being gated');
         }
       } else if (run(NODE, ['--experimental-strip-types', '--test', ...webUnits], { timeout: 180000 }) !== null) {
         pass('web pdf write-scope unit suites pass (#2185)');
@@ -17326,7 +17336,7 @@ try {
         // Surface the child's own output, for the same reason the per-file
         // node:test path does (see runDiscovered): a bare "failed" is not
         // actionable. It matters MORE here, because this is one child running
-        // every suite under web/tests/lib — so the rerun command this prints is
+        // every suite under frontend/tests/lib — so the rerun command this prints is
         // a ~100-file line, and without the excerpt there is nothing to say
         // which of the hundred broke. A flake that only reproduces on a slow
         // runner is then undiagnosable by construction, which is the half of
@@ -17334,11 +17344,11 @@ try {
         fail(`web pdf write-scope unit suites failed${killed ? ` (killed: ${killed})` : ''} (run: node --experimental-strip-types --test ${webUnits.join(' ')})${formatRunFailure()}`);
       }
 
-      // Parity: everything web/package.json would run must be something we DO run.
-      // The block above only reads web/tests/lib, while web's own script is
+      // Parity: everything each web package's `npm test` would run must be something we DO run.
+      // The block above only reads frontend/tests/lib, while web's own script is
       // `node --test "tests/**/*.test.mjs"` — recursive. Today those agree (39 of
       // 39 live in lib/), and nothing anywhere asserts that they keep agreeing.
-      // The day a suite lands in web/tests/routes/, web-ci.yml still runs it (its
+      // The day a suite lands in <package>/tests/routes/, web-ci.yml still runs it (its
       // glob is recursive), so the failure this prevents is not "nobody runs it".
       // It is narrower and worse: the instrument we MERGE by stops looking. A
       // co-preview lot comes back green having skipped a suite that exists, while
@@ -17346,10 +17356,13 @@ try {
       // measurements of the same fact, diverging in silence. Discovered on both
       // sides, so this cannot rot into a stale list of its own.
       try {
-        const webTestsRoot = join(ROOT, 'web', 'tests');
-        if (existsSync(webTestsRoot)) {
+        const webTestsRoots = ['frontend', 'backend', 'shared']
+          .map((pkg) => join(ROOT, pkg, 'tests'))
+          .filter((dir) => existsSync(dir));
+        if (webTestsRoots.length > 0) {
           const gated = new Set(webUnits.map((f) => join(ROOT, f)));
-          const ungated = listTree(webTestsRoot, { match: /\.test\.mjs$/ })
+          const ungated = webTestsRoots
+            .flatMap((dir) => listTree(dir, { match: /\.test\.mjs$/ }))
             .filter((f) => !gated.has(f)).sort();
           if (ungated.length === 0) {
             pass(`every web suite is gated by the required check (${webUnits.length} discovered)`);
@@ -17357,7 +17370,7 @@ try {
             fail(
               `${ungated.length} web suite(s) run in web's own CI but NOT in this required check: ` +
               `${ungated.map((f) => f.slice(ROOT.length + 1)).join(', ')} — ` +
-              `this section only reads web/tests/lib, so anything outside it gates nothing`,
+              `this section only reads <package>/tests/lib, so anything outside it gates nothing`,
             );
           }
         }
@@ -17543,7 +17556,7 @@ try {
 
   // 55.7 The company/role matching key: core vs the web's declared mirror (#2666).
   //
-  // The browser cannot reach the user's checkout, so web/src/lib/core/
+  // The browser cannot reach the user's checkout, so frontend/src/lib/core/
   // normalize-text-key.mjs is a COPY by necessity, declared as such. A conscious
   // copy without an assertion is exactly the failure this repo has now hit five
   // times (states.ts, CADENCE_DEFAULTS, doctor prereqs, the #2590 cache, and the
@@ -17558,13 +17571,13 @@ try {
   // Expected values are DERIVED from the core, never hand-written: a hand-written
   // expectation would freeze today's answer and stop tracking the source.
   const corpusPath = join(ROOT, 'tests', 'fixtures', 'company-key-corpus.json');
-  const mirrorPath = join(ROOT, 'web', 'src', 'lib', 'core', 'normalize-text-key.mjs');
-  if (!existsSync(join(ROOT, 'web', 'src'))) {
-    warn('web/ not present in this checkout — skipping the company-key parity freeze (#2666)');
+  const mirrorPath = join(ROOT, 'shared', 'src', 'core', 'normalize-text-key.mjs');
+  if (!existsSync(join(ROOT, 'frontend', 'src'))) {
+    warn('frontend/ not present in this checkout — skipping the company-key parity freeze (#2666)');
   } else if (!existsSync(corpusPath) || !existsSync(mirrorPath)) {
-    // web/ IS here, so a missing file is a move, not an absence. Failing rather
+    // frontend/ IS here, so a missing file is a move, not an absence. Failing rather
     // than skipping: a skip is how this freeze would quietly stop guarding.
-    fail(`web/ exists but ${!existsSync(corpusPath) ? 'tests/fixtures/company-key-corpus.json' : 'web/src/lib/core/normalize-text-key.mjs'} is missing — the #2666 key parity cannot verify (moved?)`);
+    fail(`frontend/ exists but ${!existsSync(corpusPath) ? 'tests/fixtures/company-key-corpus.json' : 'shared/src/core/normalize-text-key.mjs'} is missing — the #2666 key parity cannot verify (moved?)`);
   } else {
     try {
       const corpus = JSON.parse(readFileSync(corpusPath, 'utf-8'));
@@ -17661,11 +17674,11 @@ try {
   // slugs, a regex boundary class — all legitimate), and a check that shouts at
   // correct code gets silenced. Here the same expression would be the bug.
   const keySurfaces = [
-    { file: join(ROOT, 'web', 'src', 'app', 'api', 'whats-new', 'route.ts'), needs: 'getNormalizeTextKey', how: 'derive from the live core' },
-    { file: join(ROOT, 'web', 'src', 'components', 'explore', 'explorer-view.tsx'), needs: 'normalize-text-key', how: 'import the shared mirror (client cannot reach the core)' },
-    { file: join(ROOT, 'web', 'src', 'app', 'actions', 'registry.ts'), needs: 'normalize-text-key', how: 'import the shared mirror' },
+    { file: join(ROOT, 'backend', 'src', 'routes', 'whats-new', 'route.ts'), needs: 'getNormalizeTextKey', how: 'derive from the live core' },
+    { file: join(ROOT, 'frontend', 'src', 'components', 'explore', 'explorer-view.tsx'), needs: 'normalize-text-key', how: 'import the shared mirror (client cannot reach the core)' },
+    { file: join(ROOT, 'frontend', 'src', 'app', 'actions', 'registry.ts'), needs: 'normalize-text-key', how: 'import the shared mirror' },
   ];
-  if (existsSync(join(ROOT, 'web', 'src'))) {
+  if (existsSync(join(ROOT, 'frontend', 'src'))) {
     for (const { file, needs, how } of keySurfaces) {
       const name = file.slice(ROOT.length + 1);
       if (!existsSync(file)) { fail(`${name} is missing — the #2666 key-source freeze cannot verify (moved?)`); continue; }

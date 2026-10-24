@@ -313,7 +313,8 @@ try {
     : fail('doctor did not report a missing profile with the override unset');
 
   // ── 3. no hand-built profile path outside the resolver ─────────────────────
-  // web/ resolves its own root and carries its own helper; this scan is the
+  // The web app (frontend/, backend/, shared/) resolves its own root and carries
+  // its own helper; this scan is the
   // core's. career-profile.mjs reads data/career-profile.yml, a different file.
   const EXEMPT = new Set(['path-resolver.mjs', 'career-profile.mjs']);
   const PENDING = new Set([]);
@@ -327,7 +328,7 @@ try {
 
   const sources = trackedFiles(ROOT, (f) => f.endsWith('.mjs'))
     .map((abs) => relative(ROOT, abs).split(sep).join('/'))
-    .filter((rel) => !/^(tests|templates|web)\//.test(rel) && rel !== 'test-all.mjs' && !/\.test\.mjs$/.test(rel));
+    .filter((rel) => !/^(tests|templates|web|frontend|backend|shared)\//.test(rel) && rel !== 'test-all.mjs' && !/\.test\.mjs$/.test(rel));
 
   const flagged = new Map();
   for (const rel of sources) {

@@ -12,9 +12,9 @@
 // the callers only pick what differs. tests/lock-rm-contention.test.mjs fails
 // if an acquire loop of its own appears anywhere else.
 //
-// web/src/lib/core/dir-lock.mjs is a byte-for-byte copy of this file, because
-// the web bundle cannot import the repo-root core (web/next.config.mjs pins the
-// Turbopack root to web/). web/tests/lib/dir-lock.test.mjs fails if the two
+// backend/src/lib/core/dir-lock.mjs is a byte-for-byte copy of this file (made
+// when the Next.js bundle could not import the repo-root core; the API server
+// still loads its own copy). backend/tests/lib/dir-lock.test.mjs fails if the two
 // differ by a single byte, so edit this file and copy it across, never the
 // other way round.
 //

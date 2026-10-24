@@ -20,8 +20,8 @@ import { relative, sep } from 'path';
 console.log('\ncore test layout — every suite lives where a runner can find it');
 
 // The two trees a runner actually discovers: test-all.mjs's discoverTests()
-// over tests/, and web/'s own `npm test` glob over web/tests/.
-const DISCOVERED_ROOTS = ['tests/', 'web/tests/'];
+// over tests/, and each web package's own `npm test` glob over <package>/tests/.
+const DISCOVERED_ROOTS = ['tests/', 'frontend/tests/', 'backend/tests/', 'shared/tests/'];
 
 // collectMjsFiles() skips node_modules, output/, data/ and any nested checkout
 // (a linked worktree marks itself with a `.git` FILE, #3499), so a developer

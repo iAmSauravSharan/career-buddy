@@ -1,10 +1,10 @@
 // tests/web-profile-path-parity.test.mjs — the web's profile.yml path resolver
-// (web/src/lib/core/profile-path.mjs) must keep the contract of the core's
+// (backend/src/lib/core/profile-path.mjs) must keep the contract of the core's
 // getProfilePath() in path-resolver.mjs (#5026).
 //
 // The web app cannot import the core helper at build time: Turbopack's root is
 // pinned to web/ and refuses modules outside it (see web/next.config.mjs, and
-// web/src/lib/profile-keywords.mjs for the same arrangement). So the web carries
+// backend/src/lib/profile-keywords.mjs for the same arrangement). So the web carries
 // a mirror, and a mirror is what drifts. This guard lives in the ROOT suite, not
 // web/tests/, because web-ci.yml runs `npm ci` inside web/ only and is not a
 // required check, while test-all.mjs runs on every PR.
@@ -36,15 +36,15 @@ import { pathToFileURL } from 'url';
 
 console.log('\nprofile path — web mirror contract');
 
-const MIRROR = join(ROOT, 'web', 'src', 'lib', 'core', 'profile-path.mjs');
+const MIRROR = join(ROOT, 'backend', 'src', 'lib', 'core', 'profile-path.mjs');
 
 // web/ is not in update-system.mjs's SYSTEM_PATHS, so an install may have no web/
 // at all; that absence is real and skipped. A web/ with the mirror missing is a
 // move, and a skip there is how a parity guard quietly stops guarding.
-if (!existsSync(join(ROOT, 'web'))) {
-  pass('profile path parity skipped: no web/ in this checkout');
+if (!existsSync(join(ROOT, 'backend'))) {
+  pass('profile path parity skipped: no backend/ in this checkout');
 } else if (!existsSync(MIRROR)) {
-  fail('web/src/lib/core/profile-path.mjs is missing; the web has no profile.yml path resolver to check');
+  fail('backend/src/lib/core/profile-path.mjs is missing; the web has no profile.yml path resolver to check');
 } else {
   const { getProfilePath } = await import(pathToFileURL(MIRROR).href);
   const root = resolve('/fixture/data-root');
@@ -73,8 +73,8 @@ if (!existsSync(join(ROOT, 'web'))) {
 console.log('\nprofile path — web mirror against the core helper');
 
 const core = await import(pathToFileURL(join(ROOT, 'path-resolver.mjs')).href);
-if (!existsSync(join(ROOT, 'web'))) {
-  pass('core comparison skipped: no web/ in this checkout');
+if (!existsSync(join(ROOT, 'backend'))) {
+  pass('core comparison skipped: no backend/ in this checkout');
 } else if (!existsSync(MIRROR)) {
   fail('web profile-path mirror is missing; nothing to compare with the core helper');
 } else if (typeof core.getProfilePath !== 'function') {
@@ -134,13 +134,13 @@ if (!existsSync(join(ROOT, 'web'))) {
 }
 
 // ---------------------------------------------------------------------------
-// Scan guard: no tracked file under web/src builds the profile path by hand. A
+// Scan guard: no tracked file under {frontend,backend,shared}/src builds the profile path by hand. A
 // new site that does is the next one to ignore CAREER_OPS_PROFILE (#5026). This
 // is a lexical guard, not proof every reader is covered: comment lines are
 // skipped, the helper is exempt, and batch/batch-runner.sh plus the prompts under
 // modes/ and batch/ are outside this change.
 
-console.log('\nprofile path — no hand-built path under web/src');
+console.log('\nprofile path — no hand-built path under the web app src trees');
 
 const BY_HAND = [
   /["']config["']\s*,\s*["']profile\.yml["']/,   // path.join(root, "config", "profile.yml")
@@ -179,33 +179,33 @@ for (const [line, want] of probes) {
   else fail(`scan misclassifies (want ${want}): ${line}`);
 }
 
-if (existsSync(join(ROOT, 'web', 'src'))) {
+if (existsSync(join(ROOT, 'frontend', 'src'))) {
   const { execFileSync } = await import('child_process');
   const { readFileSync } = await import('fs');
   let tracked = [];
   try {
-    tracked = execFileSync('git', ['ls-files', '-z', '--', 'web/src'], { cwd: ROOT, encoding: 'utf8' })
+    tracked = execFileSync('git', ['ls-files', '-z', '--', 'frontend/src', 'backend/src', 'shared/src'], { cwd: ROOT, encoding: 'utf8' })
       .split('\0')
       .filter((f) => /\.(ts|tsx|mjs|js)$/.test(f));
   } catch (err) {
-    fail(`could not list tracked web/src files: ${err.message}`);
+    fail(`could not list tracked web app src files: ${err.message}`);
   }
   // Exemptions, explicit: the helper itself (it is the one reader of the
   // variable), and cv-template.mjs, which must read the variable itself to hand
   // cv-templates.mjs an absolute path (see its header). Nothing else is exempt.
   const EXEMPT = new Set([
-    'web/src/lib/core/profile-path.mjs',
-    'web/src/lib/core/cv-template.mjs',
+    'backend/src/lib/core/profile-path.mjs',
+    'backend/src/lib/core/cv-template.mjs',
   ]);
   const scanned = tracked.filter((f) => !EXEMPT.has(f));
-  if (scanned.length > 50) pass(`scanned ${scanned.length} tracked web/src files`);
-  else fail(`only ${scanned.length} tracked web/src files scanned; an empty scan cannot pass`);
+  if (scanned.length > 50) pass(`scanned ${scanned.length} tracked web app src files`);
+  else fail(`only ${scanned.length} tracked web app src files scanned; an empty scan cannot pass`);
   const offenders = [];
   for (const f of scanned) {
     readFileSync(join(ROOT, f), 'utf8').split('\n').forEach((line, i) => {
       if (handBuilt(line)) offenders.push(`${f}:${i + 1}`);
     });
   }
-  if (offenders.length === 0) pass('no web/src file builds config/profile.yml by hand');
+  if (offenders.length === 0) pass('no web app src file builds config/profile.yml by hand');
   else fail(`hand-built config/profile.yml path (route through getProfilePath): ${offenders.join(', ')}`);
 }

@@ -48,11 +48,11 @@ const NODE = process.execPath;
 // the core WITHOUT the web/ tree. The web-reader tests below exercise the
 // real alias chain on fresh clones and CI, and skip cleanly on core-only
 // installs instead of crashing the whole suite with ERR_MODULE_NOT_FOUND.
-const HAS_WEB = existsSync(join(ROOT, 'web', 'src', 'lib', 'tracker-table.mjs'));
+const HAS_WEB = existsSync(join(ROOT, 'backend', 'src', 'lib', 'tracker-table.mjs'));
 const WEB = HAS_WEB ? {} : { skip: 'web/ not present (core-only install; web/ is excluded from the auto-updater by design)' };
 // Relative specifiers: an absolute path is not a valid ESM specifier on
 // Windows (`D:\...` reads as a URL scheme).
-const webTable = () => import('../web/src/lib/tracker-table.mjs');
+const webTable = () => import('../backend/src/lib/tracker-table.mjs');
 
 // tracker.mjs's index is node:sqlite. package.json now requires a Node that
 // ships it unflagged (22.13+, #4801), so this normally never skips; it stays
@@ -454,7 +454,7 @@ describe('contract: an unknown extra column', () => {
 });
 
 // ── Test 8: web read path resolves headers via the SHARED alias table ───────
-// web/src/lib/tracker-table.mjs (behind readApplications() in career-ops.ts)
+// backend/src/lib/tracker-table.mjs (behind readApplications() in career-ops.ts)
 // loads tracker-aliases.json — the same file tracker-parse.mjs exports as
 // HEADER_ALIASES — instead of mirroring it. Passing ROOT here exercises the
 // REAL alias file, so an alias added/renamed there is either honored by the
@@ -1184,7 +1184,7 @@ describe('headed additions: what optional-cell leniency must not accept', () => 
 describe('web persist emitter: TSV header matches the ingest contract', WEB, () => {
   let header, dataLine;
   before(async () => {
-    const { trackerTsvLine } = await import('../web/src/lib/report-persist.mjs');
+    const { trackerTsvLine } = await import('../backend/src/lib/report-persist.mjs');
     const tsv = trackerTsvLine({
       num: '2', today: '2026-02-02', company: 'Globex', role: 'Manager',
       score: '4.5/5', reportFile: '2-globex-2026-02-02.md',

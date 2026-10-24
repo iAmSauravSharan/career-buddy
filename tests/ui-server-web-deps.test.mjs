@@ -1,9 +1,9 @@
-// `npm run ui` on a checkout where web/ has no dependencies installed must say
-// so before printing a URL, and a server that dies on startup must not be
-// blamed on the port.
+// `npm run ui` on a checkout where the web app (frontend/ + backend/) has no
+// dependencies installed must say so before printing a URL, and a server that
+// dies on startup must not be blamed on the port.
 //
-// The launcher finds web/ next to its own directory, so each test copies it and
-// the modules it imports into a throwaway tree.
+// The launcher finds frontend/ and backend/ next to its own directory, so each
+// test copies it and the modules it imports into a throwaway tree.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -17,8 +17,8 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const COPIED = [
   'scripts/ui-server.mjs',
   'path-resolver.mjs',
-  'web/src/lib/bind-host.mjs',
-  'web/src/lib/origin-guard.mjs',
+  'frontend/src/lib/bind-host.mjs',
+  'shared/src/origin-guard.mjs',
 ];
 
 function launcherTree() {
@@ -27,8 +27,19 @@ function launcherTree() {
     mkdirSync(dirname(join(dir, rel)), { recursive: true });
     cpSync(join(ROOT, rel), join(dir, rel));
   }
-  writeFileSync(join(dir, 'web', 'package.json'), JSON.stringify({ name: 'web', dependencies: { next: '^15.0.0' } }));
+  mkdirSync(join(dir, 'frontend'), { recursive: true });
+  mkdirSync(join(dir, 'backend'), { recursive: true });
+  writeFileSync(join(dir, 'frontend', 'package.json'), JSON.stringify({ name: 'frontend', dependencies: { next: '^15.0.0' } }));
+  writeFileSync(join(dir, 'backend', 'package.json'), JSON.stringify({ name: 'backend', dependencies: { tsx: '^4.0.0' } }));
   return dir;
+}
+
+/** A stub `tsx` whose CLI keeps the fake API server alive until it is stopped. */
+function installStubApi(dir) {
+  const tsxDir = join(dir, 'backend', 'node_modules', 'tsx');
+  mkdirSync(join(tsxDir, 'dist'), { recursive: true });
+  writeFileSync(join(tsxDir, 'package.json'), JSON.stringify({ name: 'tsx', version: '4.0.0' }));
+  writeFileSync(join(tsxDir, 'dist', 'cli.mjs'), 'setInterval(() => {}, 1000);\n');
 }
 
 async function freePort() {
@@ -56,7 +67,7 @@ test('missing web dependencies are named, with the install command, before any U
     const run = await launch(dir);
     assert.equal(run.status, 1);
     assert.match(run.stderr, /Web UI dependencies are not installed/);
-    assert.match(run.stderr, /npm --prefix web ci/);
+    assert.match(run.stderr, /npm --prefix frontend ci/);
     assert.doesNotMatch(run.stdout, /Web UI:/);
     assert.doesNotMatch(run.stderr, /Port may be occupied/);
   } finally {
@@ -67,10 +78,11 @@ test('missing web dependencies are named, with the install command, before any U
 test('a server that exits during startup is not blamed on the port', async () => {
   const dir = launcherTree();
   try {
-    const nextDir = join(dir, 'web', 'node_modules', 'next');
+    installStubApi(dir);
+    const nextDir = join(dir, 'frontend', 'node_modules', 'next');
     mkdirSync(nextDir, { recursive: true });
     writeFileSync(join(nextDir, 'package.json'), JSON.stringify({ name: 'next', version: '15.0.0', bin: { next: 'cli.js' } }));
-    writeFileSync(join(dir, 'web', 'server.mjs'), 'process.exitCode = 3;\n');
+    writeFileSync(join(dir, 'frontend', 'server.mjs'), 'process.exitCode = 3;\n');
     const run = await launch(dir);
     assert.equal(run.status, 3);
     assert.doesNotMatch(run.stderr, /Port may be occupied/);

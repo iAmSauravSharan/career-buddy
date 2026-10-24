@@ -1,15 +1,15 @@
 name: career-buddy Vercel preview
 
-# Deploys a Vercel *preview* of the web dashboard (web/) for every push and PR.
+# Deploys a Vercel *preview* of the frontend (frontend/) for every push and PR.
 # Requires three repo secrets (Settings > Secrets and variables > Actions):
 #   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
-# and the Vercel project's Root Directory set to `web`. Without the secrets the
+# and the Vercel project's Root Directory set to `frontend`. Without the secrets the
 # job exits cleanly with a notice instead of failing.
 #
 # The preview is built from the committed tree only, so none of your personal
 # data (cv.md, data/, reports/ ... are gitignored) can end up on Vercel. It is a
-# UI preview: the app is local-first, so the deployed copy starts with no data
-# and cannot run the local CLI.
+# UI preview only: no backend is deployed with it, so set the project's
+# BACKEND_URL to a reachable API or every data-backed page shows an error.
 on:
   push:
   pull_request:

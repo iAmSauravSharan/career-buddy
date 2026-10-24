@@ -63,9 +63,11 @@
 /.github/workflows/            @santifer
 /docs/PLUGIN_REVIEW.md         @santifer
 
-# The experimental web UI — owned by the web track (dual-track review with the
-# core maintainer on any PR that also touches root files).
-/web/ @santifer
+# The web app — UI, API server and their shared helpers (dual-track review with
+# the core maintainer on any PR that also touches root files).
+/frontend/ @santifer
+/backend/ @santifer
+/shared/ @santifer
 
 # ── Area owners ────────────────────────────────────────────────────────────
 # Not red lines: these are the day-to-day areas, routed to whoever has been

@@ -1,7 +1,7 @@
 // tests/liveness-browser-web-imports.test.mjs — the core files the web app loads
 // at runtime import nothing from npm.
 //
-// web/src/lib/apply/url-guard.mjs loads liveness-browser.mjs from the core
+// backend/src/lib/apply/url-guard.mjs loads liveness-browser.mjs from the core
 // checkout. The web install only has web/node_modules, so a bare package import
 // anywhere in that file's import closure fails there with ERR_MODULE_NOT_FOUND.
 // #5177 made liveness-core.mjs import history-ats-seeds.mjs, which reaches

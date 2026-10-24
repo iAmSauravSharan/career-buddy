@@ -24,7 +24,7 @@ export const LEGACY_COLMAP = {
 /**
  * Header text (lowercased) → canonical field name. Includes ES aliases.
  * Loaded from tracker-aliases.json — the ONE shared alias table, which the web
- * read path (web/src/lib/tracker-table.mjs) also loads at runtime, so the two
+ * read path (backend/src/lib/tracker-table.mjs) also loads at runtime, so the two
  * can never drift (PR #1598 review). Add new aliases in the JSON, not here.
  *
  * A missing or corrupt JSON is a broken install (the file ships alongside this

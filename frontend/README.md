@@ -1,4 +1,4 @@
-# career-ops web (alpha)
+# career-buddy web app — frontend (alpha)
 
 An **experimental, opt-in web UI** for career-ops. It is a local-first *view* over
 the exact same files the CLI reads and writes (`data/pipeline.md`,
@@ -9,19 +9,41 @@ database, no server. If you never run it, nothing about your CLI workflow change
 > [Discussion #1142](https://github.com/career-ops-hq/career-ops/discussions/1142) ·
 > roadmap context → [Discussion #156](https://github.com/career-ops-hq/career-ops/discussions/156).
 
+## Layout
+
+The web app is three packages beside the career-ops core:
+
+| Package | What it is |
+|---------|------------|
+| `frontend/` (this one) | Next.js UI. Pages render from backend data; it never reads your files itself. |
+| `backend/` | Hono API server on Node. Every `/api/*` route, plus `/api/views/*` that hand each page its data. It runs the core scripts. |
+| `shared/` | Pure helpers and wire types both sides import as `@shared/*`. No Node built-ins, no I/O. |
+
+Server components call the backend at `BACKEND_URL` (default `http://127.0.0.1:3001`).
+The browser keeps calling relative `/api/*` URLs, which `next.config.mjs` rewrites to
+the same backend, so the browser only ever talks to this origin.
+
 ## Quick start
 
 Requires Node 22.6+ (see [Tests](#tests) — `npm test` needs glob discovery, and `--experimental-strip-types` for the suites that import `.ts` modules directly; the flag landed in 22.6.0).
 
+From the repository root, `npm run ui` starts both servers (the API on the UI
+port + 1) and opens the browser. Install the dependencies once first:
+
 ```bash
-cd web
-npm ci
-npm run build
-npm start
+npm --prefix shared ci && npm --prefix backend ci && npm --prefix frontend ci
+npm run ui
 ```
 
-Open http://localhost:3000. The app reads the career-ops checkout it lives in
-(the parent directory) — your existing CV, pipeline and reports appear as-is.
+To run the two servers yourself:
+
+```bash
+cd backend && npm start                       # API on 127.0.0.1:3001
+cd frontend && npm run build && npm start     # UI on localhost:3000
+```
+
+Open http://localhost:3000. The API reads the career-ops checkout it lives in
+(the repository root) — your existing CV, pipeline and reports appear as-is.
 
 `npm start` serves the production build, which is the one to use day to day.
 Run `npm run build` again after updating career-ops so the app picks up the new
@@ -100,13 +122,15 @@ npx tsc --noEmit     # typecheck
 npm run build        # production build
 ```
 
-Set `CAREER_OPS_ROOT=/path/to/checkout` in `web/.env.local` to point the app at
-a different career-ops directory (useful for testing against sample data).
-Root scripts such as `doctor.mjs` run from the checkout that holds `web/`, not
-from `CAREER_OPS_ROOT`; set `CAREER_OPS_CODE_ROOT` when the app runs outside it.
+Set `CAREER_OPS_ROOT=/path/to/checkout` in the backend's environment to point
+the app at a different career-ops directory (useful for testing against sample
+data). Root scripts such as `doctor.mjs` run from the checkout that holds
+`backend/`, not from `CAREER_OPS_ROOT`; set `CAREER_OPS_CODE_ROOT` when the API
+runs outside it.
 
-Every route but build assets is gated by the same-origin + loopback guard in
-`src/lib/origin-guard.mjs`. Two opt-ins widen it, both unset by default and both in `web/.env.local`:
+Every page (here, in `src/proxy.ts`) and every API route (in the backend) is
+gated by the same-origin + loopback guard in `shared/src/origin-guard.mjs`. Two
+opt-ins widen it, both unset by default, set for the frontend and the backend alike:
 `CAREER_OPS_WEB_ALLOWED_HOSTS` names extra non-loopback hosts the dashboard may
 answer on, and `CAREER_OPS_ALLOWED_ORIGINS` names origins allowed to call the
 API from outside the app — a comma- or space-separated list, no trailing slash.
@@ -205,19 +229,20 @@ all and keeps the bind on loopback.
 
 ### Tests
 
-Suites live in `web/tests/`, mirroring the path of what they test under
-`web/src/` — so `src/lib/clean-chips.mjs` is tested by
-`tests/lib/clean-chips.test.mjs`. Name the file `{module}.test.mjs`.
+Suites live in each package's `tests/`, mirroring the path of what they test
+under that package's `src/` — so `shared/src/clean-chips.mjs` is tested by
+`shared/tests/lib/clean-chips.test.mjs`. Name the file `{module}.test.mjs`, and
+put it in the package that owns the module it tests.
 
 Root-level scripts are the one exception: `server.mjs` is tested by
 `tests/lib/server-launcher.test.mjs`, because `test-all.mjs`'s parity check gates
-only `web/tests/lib/` and a suite outside it would never run in the required check.
+only each package's `tests/lib/` and a suite outside it would never run in the required check.
 
 `npm test` discovers them with a glob (`tests/**/*.test.mjs`), so a new suite
 needs **no registration** — just add the file. **Requires Node ≥ 22**: earlier
 versions don't expand CLI globs for `node --test`, so `npm test` prints
 `Could not find '…'`, runs nothing and exits 1. Hence `engines.node` in
-`web/package.json` — a higher floor than `next` itself asks for.
+each package's `package.json` — a higher floor than `next` itself asks for.
 
 Three constraints follow from all this:
 

@@ -5,7 +5,7 @@
     ".": {
       "release-type": "simple",
       "package-name": "career-ops",
-      "exclude-paths": ["web"],
+      "exclude-paths": ["frontend", "backend", "shared"],
       "extra-files": [
         {
           "type": "json",
@@ -48,7 +48,7 @@
         }
       ]
     },
-    "web": {
+    "frontend": {
       "release-type": "node",
       "package-name": "career-ops-web",
       "component": "web",

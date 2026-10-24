@@ -1,4 +1,5 @@
-// doctor warns when web/ has no dependencies installed, because `npm run ui`
+// doctor warns when the web app (frontend/, backend/, shared/) has no
+// dependencies installed, because `npm run ui`
 // cannot start without them. The web UI is optional, so this is a warning.
 //
 // Driven through --target, as in tests/doctor-dependency-resolution.test.mjs.
@@ -18,11 +19,11 @@ function checkout({ web, installed }) {
   const dir = mkdtempSync(join(tmpdir(), 'co-doctor-web-deps-'));
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'fixture', dependencies: {} }));
   if (web) {
-    mkdirSync(join(dir, 'web'));
-    writeFileSync(join(dir, 'web', 'package.json'), JSON.stringify({ name: 'web', dependencies: { [WEB_DEP]: '^1.0.0' } }));
+    mkdirSync(join(dir, 'frontend'));
+    writeFileSync(join(dir, 'frontend', 'package.json'), JSON.stringify({ name: 'frontend', dependencies: { [WEB_DEP]: '^1.0.0' } }));
   }
   if (installed) {
-    const pkg = join(dir, 'web', 'node_modules', WEB_DEP);
+    const pkg = join(dir, 'frontend', 'node_modules', WEB_DEP);
     mkdirSync(pkg, { recursive: true });
     writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: WEB_DEP, version: '1.0.0' }));
   }
@@ -47,7 +48,7 @@ function withCheckout(shape, fn) {
 test('missing web dependencies warn and give the install command', () => {
   withCheckout({ web: true, installed: false }, (out) => {
     assert.match(out, /⚠ Web UI dependencies are not installed/);
-    assert.match(out, /npm --prefix web ci/);
+    assert.match(out, /npm --prefix frontend ci/);
   });
 });
 
@@ -57,7 +58,7 @@ test('installed web dependencies pass', () => {
   });
 });
 
-test('a checkout without web/ reports nothing about it', () => {
+test('a checkout without the web app reports nothing about it', () => {
   withCheckout({ web: false, installed: false }, (out) => {
     assert.doesNotMatch(out, /Web UI dependencies/);
   });

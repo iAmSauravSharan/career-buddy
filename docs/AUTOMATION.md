@@ -130,15 +130,15 @@ jobs every 15 minutes and runs at most one queued scan per check.
 #### Linux — cron
 
 ```sh
-sh web/scripts/install-scan-schedule.sh    # adds one marked crontab line
-sh web/scripts/uninstall-scan-schedule.sh  # removes only that line
+sh backend/scripts/install-scan-schedule.sh    # adds one marked crontab line
+sh backend/scripts/uninstall-scan-schedule.sh  # removes only that line
 ```
 
 #### macOS — launchd
 
 ```sh
-sh web/scripts/install-scan-schedule.sh    # installs a LaunchAgent
-sh web/scripts/uninstall-scan-schedule.sh  # removes it
+sh backend/scripts/install-scan-schedule.sh    # installs a LaunchAgent
+sh backend/scripts/uninstall-scan-schedule.sh  # removes it
 ```
 
 The agent needs a logged-in GUI session.
@@ -146,8 +146,8 @@ The agent needs a logged-in GUI session.
 #### Windows — Task Scheduler
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File web/scripts/install-scan-schedule.ps1
-web/scripts/uninstall-scan-schedule.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File backend/scripts/install-scan-schedule.ps1
+backend/scripts/uninstall-scan-schedule.ps1
 ```
 
 The task runs in the current user's interactive session, so you must be logged in.
@@ -161,7 +161,7 @@ that file for "Last OS check". The installer bakes `CAREER_OPS_ROOT`,
 are set in the shell that runs it. The web process must get the same values, for
 example in `web/.env.local`, or the page reads a different store and tick file.
 The installer does not read `web/.env.local`, so export the values in your shell
-when you install (for example `CAREER_OPS_ROOT=/path/to/data sh web/scripts/install-scan-schedule.sh`).
+when you install (for example `CAREER_OPS_ROOT=/path/to/data sh backend/scripts/install-scan-schedule.sh`).
 Run the installer again after you change them.
 
 After any of these, new postings land in `data/pipeline.md` under `## Pending` on

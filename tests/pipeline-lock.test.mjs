@@ -799,7 +799,7 @@ test('no lock module re-derives the wait ceiling — the policy holds the only c
   // The web's copy of the policy module is the policy, not a re-derivation of
   // it, for exactly as long as it is byte-identical (#5358). A drifted copy is
   // scanned like any other file.
-  const webMirror = join(REPO_ROOT, 'web', 'src', 'lib', 'core', 'dir-lock.mjs');
+  const webMirror = join(REPO_ROOT, 'backend', 'src', 'lib', 'core', 'dir-lock.mjs');
   const mirrorIsPolicy = existsSync(webMirror) && readFileSync(webMirror).equals(readFileSync(policyModule));
   const sources = collectMjsFiles(REPO_ROOT)
     .filter((f) => f !== SELF && f !== policyModule && !(mirrorIsPolicy && f === webMirror));

@@ -87,7 +87,7 @@ const DIRECT_LOAD = [
 test('no shipped script calls js-yaml load directly', () => {
   const tracked = execFileSync('git', ['-C', ROOT, 'ls-files', '-z', '--', '*.mjs', '*.js'], { encoding: 'utf8' })
     .split('\0')
-    .filter((p) => p && !p.startsWith('tests/') && !p.startsWith('web/') && p !== 'test-all.mjs' && p !== 'lib/yaml-document.mjs');
+    .filter((p) => p && !p.startsWith('tests/') && !/^(web|frontend|backend|shared)\//.test(p) && p !== 'test-all.mjs' && p !== 'lib/yaml-document.mjs');
   assert.ok(tracked.length > 50, `only ${tracked.length} tracked scripts found`);
   const offenders = tracked.filter((p) => {
     const text = readFileSync(join(ROOT, p), 'utf8');

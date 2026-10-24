@@ -105,10 +105,10 @@ const RECONCILED_NOT_CHECKED_OUT = ['.gitignore'];
 const REPO_ONLY = ['SIGNATURES.md'];
 
 // Trees that live in the repo but deliberately OUTSIDE the updater's world:
-// web/ is the experimental web UI — its own release-please component, never
-// shipped by update-system.mjs, never in the npm package. Excluding it here is
-// part of that isolation contract, not a coverage gap.
-const EXCLUDE_PREFIXES = ['web/'];
+// frontend/, backend/ and shared/ are the web app — deployed on their own,
+// never shipped by update-system.mjs, never in the npm package. Excluding them
+// here is part of that isolation contract, not a coverage gap.
+const EXCLUDE_PREFIXES = ['frontend/', 'backend/', 'shared/'];
 
 function covered(file) {
   // If explicitly excluded, it is covered
@@ -176,8 +176,10 @@ if (process.argv.includes('--self-test')) {
 
   // Test sibling mismatch (strict prefix match)
   assert(covered('providers-sibling/justjoin.mjs') === false, 'providers-sibling/justjoin.mjs must NOT be covered');
-  assert(covered('web/package.json') === true, 'web/ tree must be covered (isolation-contract prefix exclude)');
-  assert(covered('web-dashboard/index.html') === false, 'web-dashboard/ must NOT ride the web/ prefix exclude');
+  assert(covered('frontend/package.json') === true, 'frontend/ tree must be covered (isolation-contract prefix exclude)');
+  assert(covered('backend/src/server.ts') === true, 'backend/ tree must be covered (isolation-contract prefix exclude)');
+  assert(covered('shared/src/types.ts') === true, 'shared/ tree must be covered (isolation-contract prefix exclude)');
+  assert(covered('frontend-dashboard/index.html') === false, 'frontend-dashboard/ must NOT ride the frontend/ prefix exclude');
   assert(covered('.npmignore') === true, '.npmignore must be covered (excluded)');
   // Asserted through the MECHANISM as well as covered(): if SIGNATURES.md ever
   // went back into SYSTEM_PATHS, covered() would still answer true while the

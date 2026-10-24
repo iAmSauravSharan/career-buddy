@@ -205,22 +205,24 @@ function checkDependencies() {
   };
 }
 
-// The web UI is optional, so missing web/ dependencies are a warning: only
-// `npm run ui` needs them, and a CLI-only install never does.
+// The web UI is optional, so missing frontend/backend/shared dependencies are a
+// warning: only `npm run ui` needs them, and a CLI-only install never does.
 function checkWebDependencies() {
-  const webDir = join(codeRoot, 'web');
-  if (!existsSync(join(webDir, 'package.json'))) return null;
-  let missing;
-  try {
-    missing = findMissingDependencies(webDir);
-  } catch (err) {
-    return { warn: true, label: `Web UI dependencies could not be checked: web/package.json unreadable (${err.message})` };
+  const dirs = ['shared', 'backend', 'frontend'].filter((d) => existsSync(join(codeRoot, d, 'package.json')));
+  if (dirs.length === 0) return null;
+  const missing = [];
+  for (const dir of dirs) {
+    try {
+      for (const dep of findMissingDependencies(join(codeRoot, dir))) missing.push(`${dir}/${dep}`);
+    } catch (err) {
+      return { warn: true, label: `Web UI dependencies could not be checked: ${dir}/package.json unreadable (${err.message})` };
+    }
   }
   if (missing.length === 0) return { pass: true, label: 'Web UI dependencies installed' };
   return {
     warn: true,
     label: `Web UI dependencies are not installed (${missing.length} missing, including ${missing[0]}), so npm run ui cannot start`,
-    fix: 'Run: npm --prefix web ci',
+    fix: 'Run: npm --prefix shared ci && npm --prefix backend ci && npm --prefix frontend ci',
   };
 }
 

@@ -19,7 +19,7 @@ This repository is two things at once, and which one you are working on depends 
 
 - The **user layer** defined in `DATA_CONTRACT.md`: `cv.md`, `config/profile.yml`, `modes/_profile.md`, `modes/_custom.md`, `article-digest.md`, `portals.yml`, `data/`, `documents/`, `reports/`, `output/`, `interview-prep/`. These are the user's private files even when the repo ships an example.
 - The **control files**: `CLAUDE.md`, `AGENTS.md`, `modes/_shared.md`, `DATA_CONTRACT.md`, `update-system.mjs`, `updater-migration-tests.mjs`, anything under `.github/`, `package.json`, `package-lock.json`, everything under `plugins-registry/`, `plugins/_*.mjs`.
-- Anything under `web/` (owned by a separate track).
+- Anything under `frontend/`, `backend/` or `shared/` (owned by a separate track).
 
 If the task cannot be completed without touching one of these, stop and explain why in your report instead of doing it.
 

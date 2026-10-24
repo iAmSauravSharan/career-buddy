@@ -8,7 +8,7 @@ reviews:
   profile: assertive
   # Humans decide: the review is a signal. Before ever flipping this to true, or
   # adding a CodeRabbit check to the branch protection required checks, give
-  # /web/ a second code owner. Its only owner cannot request a reviewer other
+  # the web app a second code owner. Its only owner cannot request a reviewer other
   # than themselves, and override_requested_reviewers_only means a failing
   # policy check would then have nobody able to clear it.
   request_changes_workflow: false
@@ -88,8 +88,8 @@ reviews:
       instructions: "The harness every check runs through. Flag new numbered sections (they belong in tests/ files) and any change that could make a failure look like a pass."
     - path: "dashboard/**"
       instructions: "Go TUI code. Check for proper error handling, no hardcoded paths, and that it reads the tracker through the same canonical formats the CLI writes."
-    - path: "web/**"
-      instructions: "First-party web UI. It must remain a view over the canonical files (tracker, pipeline, reports), never a parallel engine. Flag any write to user files that bypasses the CLI scripts, any agent CLI invocation outside the spawn boundary, and any secret or API key committed."
+    - path: "{frontend,backend,shared}/**"
+      instructions: "First-party web app (frontend/ UI, backend/ API, shared/ pure helpers). It must remain a view over the canonical files (tracker, pipeline, reports), never a parallel engine. Flag any write to user files that bypasses the CLI scripts, any agent CLI invocation outside the spawn boundary, and any secret or API key committed."
     - path: ".github/workflows/**"
       instructions: "Treat as security-sensitive. Flag pull_request_target with a checkout of the fork, secrets exposed to fork code, unpinned third-party actions, and permissions broader than needed."
     - path: "plugins/_*.mjs"
@@ -190,7 +190,7 @@ reviews:
     - label: "📊 dashboard"
       instructions: "Apply when the PR touches dashboard/."
     - label: "area:web"
-      instructions: "Apply when the PR touches web/."
+      instructions: "Apply when the PR touches frontend/, backend/ or shared/."
     - label: "needs-rebase"
       instructions: "Apply when the PR has merge conflicts with main."
 
@@ -237,8 +237,8 @@ code_generation:
         instructions: "Put the suite in tests/<subject>.test.mjs. test-all.mjs discovers that directory automatically, so no registration is needed. Do not use node:test, jest, vitest or any other framework and do not add a dependency: import pass, fail and the run helper from ./helpers.mjs, print a one-line header with console.log, and never call process.exit. Keep every test hermetic: no network, and no writes outside a temporary directory. Never read or write a user-layer path as defined in DATA_CONTRACT.md (cv.md, config/profile.yml, data/, reports/, output/, modes/_profile.md, modes/_custom.md); use a fixture instead."
       - path: "dashboard/**/*.go"
         instructions: "Standard library table-driven tests in the same package, _test.go suffix, no external test framework, no network."
-      - path: "web/**"
-        instructions: "Use Node's built-in test runner. Import test from node:test and assert from node:assert/strict; no vitest, jest, chai or any external framework, and no describe blocks. Place tests at web/tests/lib/<subject>.test.mjs and import the subject as a relative path (../../src/lib/x.mjs): the @/ alias does not resolve under node --test, which is why testable logic lives in plain .mjs. Prefer assert.deepEqual on a whole returned value over several assert.equal on its parts. Each test name must state the property being asserted, not the function being called. Cover the negative case: what must NOT happen, and the value that would be wrong. When a test pins a past bug, say which one and what it cost in a comment above it."
+      - path: "{frontend,backend,shared}/**"
+        instructions: "Use Node's built-in test runner. Import test from node:test and assert from node:assert/strict; no vitest, jest, chai or any external framework, and no describe blocks. Place tests at <package>/tests/lib/<subject>.test.mjs in the package that owns the subject and import it as a relative path (../../src/lib/x.mjs): the @/ alias does not resolve under node --test, which is why testable logic lives in plain .mjs. Prefer assert.deepEqual on a whole returned value over several assert.equal on its parts. Each test name must state the property being asserted, not the function being called. Cover the negative case: what must NOT happen, and the value that would be wrong. When a test pins a past bug, say which one and what it cost in a comment above it."
   docstrings:
     path_instructions:
       - path: "**/*.mjs"

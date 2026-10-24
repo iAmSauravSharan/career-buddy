@@ -13,7 +13,7 @@ function Stop-Mine {
   # Non-elevated, this can only touch the current user's processes.
   Get-CimInstance Win32_Process | Where-Object {
     ($_.Name -eq 'powershell.exe' -and $_.CommandLine -like '*run-web.ps1*') -or
-    ($_.Name -eq 'node.exe' -and $_.CommandLine -like "*$CoRoot\web*")
+    ($_.Name -eq 'node.exe' -and ($_.CommandLine -like "*$CoRoot\frontend*" -or $_.CommandLine -like "*$CoRoot\backend*"))
   } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 }
 
@@ -35,8 +35,8 @@ function Invoke-Npm([string]$dir, [string[]]$npmArgs) {
 function Invoke-Rebuild([switch]$NoRestart) {
   Stop-Mine
   # Deps only when the lockfile changed (another signed-in user's server can lock node_modules).
-  foreach ($dir in $CoRoot, (Join-Path $CoRoot 'web')) {
-    # The root package ships no lockfile (npm install); web/ has one (npm ci).
+  foreach ($dir in $CoRoot, (Join-Path $CoRoot 'shared'), (Join-Path $CoRoot 'backend'), (Join-Path $CoRoot 'frontend')) {
+    # npm ci where a package ships a lockfile (frontend/), npm install where it does not.
     $lock = Get-Item (Join-Path $dir 'package-lock.json') -ErrorAction SilentlyContinue
     $manifest = if ($lock) { $lock } else { Get-Item (Join-Path $dir 'package.json') }
     $stamp = Get-Item (Join-Path $dir 'node_modules\.package-lock.json') -ErrorAction SilentlyContinue
@@ -44,12 +44,12 @@ function Invoke-Rebuild([switch]$NoRestart) {
       Invoke-Npm $dir @($(if ($lock) { 'ci' } else { 'install' }), '--no-audit', '--no-fund')
     }
   }
-  Invoke-Npm (Join-Path $CoRoot 'web') @('run', 'build')
+  Invoke-Npm (Join-Path $CoRoot 'frontend') @('run', 'build')
   if (Get-Command go.exe -ErrorAction SilentlyContinue) {
     $ErrorActionPreference = 'Continue'
     Push-Location (Join-Path $CoRoot 'dashboard'); try { go build -o career-dashboard.exe . } finally { Pop-Location }
   }
-  $cache = Join-Path $CoRoot 'web\.next\cache'
+  $cache = Join-Path $CoRoot 'frontend\.next\cache'
   New-Item -ItemType Directory -Force -Path $cache | Out-Null
   icacls $cache /grant '*S-1-5-32-545:(OI)(CI)M' /T /C /Q | Out-Null
   Start-CoRunner

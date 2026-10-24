@@ -356,7 +356,7 @@ export function parseApplicationAnswersSection(reportText, { strict = false } = 
  * regenerated every answer the evaluation had already drafted and paid for.
  *
  * A trailing parenthetical marker is the signal instead, which is the
- * convention `web/src/lib/report-sections.mjs` already established for the
+ * convention `shared/src/report-sections.mjs` already established for the
  * verdict callout: `(lead)` / `(verdict)` are stripped for display precisely
  * because they are deliberate authoring signals that read the same in every
  * language. `(draft)` is the same shape for the same reason; the evaluation

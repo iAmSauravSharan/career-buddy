@@ -22,8 +22,8 @@ function readFile(path) {
   return content;
 }
 
-// The heading shape the report parser recognizes. web/src/lib/report-sections.mjs
-// (imported by web/src/components/report-view.tsx) splits a body on /^##\s+(.*)$/
+// The heading shape the report parser recognizes. shared/src/report-sections.mjs
+// (imported by frontend/src/components/report-view.tsx) splits a body on /^##\s+(.*)$/
 // and promotes a heading ending in `(lead)` or `(verdict)`. The mode contract
 // requires the language-invariant `(lead)` marker (modes/oferta.md), so this
 // guard matches `(lead)` only. `##` must be followed by whitespace, any kind
@@ -45,11 +45,11 @@ const leadHeadings = (text) => {
 // reaches checkouts with no web/ at all, where a static import would fail the
 // whole file (#1675 / #1677). Only this check needs the parser, so only this
 // check is skipped; a parser missing under a present web/ is a move and fails.
-const WEB_REPORT_SECTIONS = join(ROOT, 'web', 'src', 'lib', 'report-sections.mjs');
-if (!existsSync(join(ROOT, 'web', 'src'))) {
+const WEB_REPORT_SECTIONS = join(ROOT, 'shared', 'src', 'report-sections.mjs');
+if (!existsSync(join(ROOT, 'frontend', 'src'))) {
   warn('web/ not present in this checkout, skipping the lead-heading parser check');
 } else if (!existsSync(WEB_REPORT_SECTIONS)) {
-  fail('web/ exists but web/src/lib/report-sections.mjs is missing, so the lead-heading parser check cannot run (moved?)');
+  fail('web/ exists but shared/src/report-sections.mjs is missing, so the lead-heading parser check cannot run (moved?)');
 } else {
   const { splitSections, isVerdictHeading } = await import(pathToFileURL(WEB_REPORT_SECTIONS).href);
   const accepted = ['## Verdict (lead)', '## Veredicto (lead)', '## 结论 (lead)', '##\tVeredicto (lead)', '##\u00a0Verdict (lead)'];
@@ -77,7 +77,7 @@ if (!existsSync(join(ROOT, 'web', 'src'))) {
 // form in prose as an example of the convention, so a
 // literal `## Verdict (lead)` entry would pass on zh, zh-TW and ru whether or
 // not those files carry a block. The `(lead)` marker is the language-invariant
-// part, and it is what cleanHeading in web/src/lib/report-sections.mjs reads,
+// part, and it is what cleanHeading in shared/src/report-sections.mjs reads,
 // so this matches the marker on a heading line. A heading line is not by
 // itself proof of a real block: every one of these files also illustrates the
 // block inside a fenced example, and those examples carry heading lines too.

@@ -17,13 +17,14 @@ import { join, relative, sep } from 'path';
 
 console.log('\nweb/ import guard — modules under tests/ check web/ exists before loading from it');
 
-// A path into web/: join() or resolve() with a 'web' segment, or a string that
-// starts at web/ or ../web/.
-const WEB_PATH = /\b(?:join|resolve)\s*\([^)]*['"]web['"]|['"`](?:\.\.\/)*web\//;
+// A path into the web app (frontend/, backend/, shared/, or the old web/):
+// join() or resolve() with one of those segments, or a string starting there.
+const WEB_DIR = String.raw`(?:web|frontend|backend|shared)`;
+const WEB_PATH = new RegExp(String.raw`\b(?:join|resolve)\s*\([^)]*['"]${WEB_DIR}['"]|['"\`](?:\.\.\/)*${WEB_DIR}\/`);
 
 // An import statement links before the module's first line runs, so no check
 // can skip it.
-const STATIC_IMPORT = /^[ \t]*(?:import|export|\})[^'"\n]*['"](?:\.\.\/)+web\//m;
+const STATIC_IMPORT = new RegExp(String.raw`^[ \t]*(?:import|export|\})[^'"\n]*['"](?:\.\.\/)+${WEB_DIR}\/`, 'm');
 
 /** Argument text of the call whose `(` is at `open`. */
 function argAt(code, open) {
@@ -80,11 +81,11 @@ function inspectWebImports(src) {
 const SHAPES = [
   // [shape, loads from web/, flagged, source]
   ['title-fit before this fix', true, true,
-    "try { const m = await import(pathToFileURL(join(ROOT, 'web', 'src', 'lib', 'title-fit.mjs')).href); } catch (e) { fail(e.message); }"],
+    "try { const m = await import(pathToFileURL(join(ROOT, 'backend', 'src', 'lib', 'title-fit.mjs')).href); } catch (e) { fail(e.message); }"],
   ['a static import, as before #3166', true, true,
-    "import { profileTargetKeywords as web } from '../web/src/lib/profile-keywords.mjs';"],
+    "import { profileTargetKeywords as web } from '../backend/src/lib/profile-keywords.mjs';"],
   ['a relative import(), as before #1677', true, true,
-    "const { loadHeaderAliases } = await import('../web/src/lib/tracker-table.mjs');"],
+    "const { loadHeaderAliases } = await import('../backend/src/lib/tracker-table.mjs');"],
   ['the house shape, through a chain of names', true, false, [
     "const WEB = join(ROOT, 'web');",
     "const MOD = join(WEB, 'src', 'lib', 'x.mjs');",
@@ -93,7 +94,7 @@ const SHAPES = [
     'else await import(pathToFileURL(MOD).href);',
   ].join('\n')],
   ["page-format's node:test skip", true, false, [
-    "const webOwner = join(ROOT, 'web', 'src', 'lib', 'page-formats.mjs');",
+    "const webOwner = join(ROOT, 'backend', 'src', 'lib', 'page-formats.mjs');",
     "if (!existsSync(webOwner)) return t.skip('no web/');",
     'const web = await import(pathToFileURL(webOwner).href);',
   ].join('\n')],
@@ -142,6 +143,6 @@ if (loaders.length === 0) {
   pass(`all ${loaders.length} modules under tests/ that load from web/ check it exists first (${loaders.join(', ')})`);
 } else {
   for (const p of problems) {
-    fail(`${p} — a checkout without web/ crashes here (#3269); guard it with existsSync(join(ROOT, 'web', 'src')) as tests/profile-keywords-parity.test.mjs does`);
+    fail(`${p} — a checkout without web/ crashes here (#3269); guard it with existsSync(join(ROOT, 'frontend', 'src')) as tests/profile-keywords-parity.test.mjs does`);
   }
 }

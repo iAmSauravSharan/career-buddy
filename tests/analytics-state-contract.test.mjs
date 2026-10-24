@@ -6,9 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { load } from 'js-yaml';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const hasWeb = existsSync(join(ROOT, 'web', 'src'));
+const hasWeb = existsSync(join(ROOT, 'frontend', 'src'));
 const { computeTrackerStats } = await import('../stats.mjs');
-const { computeProgressMetrics } = hasWeb ? await import('../web/src/lib/analytics-metrics.mjs') : {};
+const { computeProgressMetrics } = hasWeb ? await import('../backend/src/lib/analytics-metrics.mjs') : {};
 
 const states = load(readFileSync(new URL('../templates/states.yml', import.meta.url), 'utf8')).states;
 const expected = {

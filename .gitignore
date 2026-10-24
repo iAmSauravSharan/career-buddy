@@ -127,7 +127,7 @@ plugins.lock
 # Secrets (never commit — use .env.example as template)
 .env
 # Universal safety net — protects ALL checkouts/branches, incl. untracked subprojects
-# (e.g. web/ before it graduates to main). Never commit local env files or TS build caches.
+# (e.g. frontend/ and backend/). Never commit local env files or TS build caches.
 **/.env.local
 **/.env*.local
 **/*.tsbuildinfo
@@ -147,14 +147,14 @@ reports/*-RESERVED.md
 
 # Backup files. Two shapes exist: `{file}.bak` (normalize-statuses.mjs,
 # dedup-tracker.mjs, tracker.mjs) and `{file}.bak-{ISO timestamp}`
-# (web/src/lib/core/safe-write.ts). A plain `*.bak` glob misses the timestamped
+# (backend/src/lib/core/safe-write.ts). A plain `*.bak` glob misses the timestamped
 # form, which for cv.md or portals.yml leaves a file holding the same PII as the
 # original sitting untracked in the repo root. Trailing `*` covers both.
 *.bak*
 
 # Atomic-write temp files, the sibling of the backups above and from the same
 # two writers: `.{name}.{pid}.{ts}.{uuid}.tmp` (tracker-utils.mjs
-# writeFileAtomic, web/src/lib/core/safe-write.ts atomicWrite). They exist only
+# writeFileAtomic, backend/src/lib/core/safe-write.ts atomicWrite). They exist only
 # between the write and the rename — but a rename that throws (Windows
 # destination-handle contention, ENOSPC, a read-only mount) leaves one behind
 # holding a byte-for-byte copy of cv.md / profile.yml / portals.yml, under a
@@ -231,7 +231,9 @@ opencode.json
 career-dashboard
 career-dashboard.exe
 package-lock.json
-!web/package-lock.json
+!frontend/package-lock.json
+!backend/package-lock.json
+!shared/package-lock.json
 
 # Playwright MCP server run artifacts (ephemeral, machine-local)
 .playwright-mcp/
@@ -279,5 +281,5 @@ data/interview-prep/
 .career-ops.env
 **/.career-ops.env
 .next/
-web/.next/
-web/out/
+frontend/.next/
+frontend/out/

@@ -217,7 +217,7 @@ const KNOWN_WITHOUT_HELP = new Set([
   // listed, because listing them is what turns this into a description of
   // nothing.
   '.github/scripts/sponsors.mjs',
-  'web/scripts/scheduled-jobs-runner.mjs',
+  'backend/scripts/scheduled-jobs-runner.mjs',
 ]);
 
 /**

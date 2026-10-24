@@ -1,55 +1,36 @@
-# Working in `web/`
+# Working in `frontend/`
 
-The web app is a **view over the user's own files**, not a second engine. Read this
-before changing anything under `web/`.
+The UI of the web app. It renders what the backend (`../backend/`) returns and
+never touches the user's files itself. Read `../backend/AGENTS.md` for the rules
+about those files: they bind every change that reaches them, whichever side
+starts it.
 
-## The three rules that are not style preferences
+## The boundary rule
 
-1. **Orchestrate the core; never reimplement it.** The CLI already resolves tracker
-   paths, matches tailored CVs and canonicalises statuses: call it, or mirror it
-   behind a parity test. A second implementation of the same rule is how the two
-   halves start disagreeing, and the disagreement is always silent.
-   `web/src/lib/core/` holds the access layer for exactly this.
+**No filesystem, no child processes, no core scripts here.** A page that needs
+data calls the backend from the server with `backendJson()` (`src/lib/backend.ts`),
+usually through a `/api/views/<page>` endpoint shaped for exactly that page. A
+client component calls a relative `/api/...` URL, which `next.config.mjs` rewrites
+to the backend. If a page needs something no endpoint returns, add the endpoint in
+the backend; do not import `node:fs` here.
 
-2. **Markdown is the source of truth.** `data/applications.md`, `cv.md`, `reports/`
-   are canonical; anything else is a derived index. Status changes go through
-   `/api/status`, which delegates to the root `set-status.mjs`. That is the single
-   write path, and it is single on purpose. Never write a user's file from a route
-   that bypasses it.
+Code both sides use goes in `../shared/src/` and is imported as `@shared/...`. It
+must stay pure: no Node built-ins and no I/O, because it is bundled into the browser.
+A type that crosses the wire goes in `shared/src/types.ts`.
 
-3. **Nothing is ever submitted automatically.** The apply flow fills in and previews;
-   a human presses send. There is no exception, no flag, and no "just for testing".
-   The browser is the Playwright session from `apply-scope.mjs`. Do not attach to
-   the user's open Chrome, read `DevToolsActivePort`, or pass a remote-debugging port.
-
-## A missing file is not a malformed file
-
-Treating a parse error as "not there yet" is how a user's config gets overwritten
-with the shipped example. Distinguish `ENOENT` from every other failure, and let a
-broken user-layer file surface as an error the user can act on rather than as an
-empty default. (`web/src/lib/portals-config.mjs` is the worked example.)
+Nothing is ever submitted automatically. The apply flow fills in and previews; a
+human presses send.
 
 ## Testing
 
 Logic that deserves a test lives in a plain `.mjs` module so `node --test` can import
-it with no build step and no `@/` alias loader. See `tracker-table.mjs`,
-`cv-selection.mjs`, `report-sections.mjs`. A component is not a place to put a rule
-you want to assert.
+it with no build step. A component is not a place to put a rule you want to assert.
 
 ```
 npm test          # node --test "tests/**/*.test.mjs"
-npm run typecheck # tsc --noEmit
-npm run dev       # the app, reading the sibling career-ops files
+npx tsc --noEmit  # typecheck
+npm run dev       # the UI; start the backend too (or `npm run ui` at the repo root)
 ```
-
-Point `CAREER_OPS_ROOT` at a scratch directory when you need data to test against;
-it is how the app finds the user's files, and it keeps your real pipeline out of it.
-
-## Reviews and scope
-
-`web/` is maintained as first-party: functional and correctness fixes are very
-welcome, design and feature proposals are routed to Discussion #156 so the surface
-stays coherent. That is a routing decision, not a judgement on the work.
 
 <!-- The block below is written and re-added by `next dev`. It is committed
      deliberately: keeping it in the file means Next updates only the marked

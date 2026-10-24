@@ -179,7 +179,7 @@ for (const path of timestampedBackupProbes) {
 
 // The backups' sibling, from the same two writers: the temp file an atomic
 // write renames into place. `.{name}.{pid}.{ts}.{uuid}.tmp` (tracker-utils.mjs
-// writeFileAtomic and web/src/lib/core/safe-write.ts atomicWrite), plus the
+// writeFileAtomic and backend/src/lib/core/safe-write.ts atomicWrite), plus the
 // `{file}.tmp-{pid}-{uuid}` shape safe-write.ts used before they were aligned —
 // a checkout that predates the alignment can still have one lying around.
 //

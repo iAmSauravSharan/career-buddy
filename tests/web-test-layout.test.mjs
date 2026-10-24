@@ -28,10 +28,10 @@ import { pass, fail, ROOT, walkFiles } from './helpers.mjs';
 import { join, relative, sep } from 'path';
 import { readFileSync, existsSync } from 'fs';
 
-console.log('\nweb/ test discovery contract (#2360)');
+console.log('\nweb app test discovery contract (#2360) — frontend/, backend/, shared/');
 
-const WEB = join(ROOT, 'web');
-const WEB_PKG = join(WEB, 'package.json');
+// Each web package runs its own `npm test` glob over <package>/tests/.
+const WEB_PACKAGES = ['frontend', 'backend', 'shared'];
 
 // `node --test` only expands CLI globs from Node 22 on: 18.19.1 and 20.11.1
 // both print "Could not find '<pattern>'", run 0 tests and exit 1 (measured).
@@ -138,10 +138,13 @@ function floorOf(range) {
 // ships to end users whose checkout has no web/ at all. The invariant is
 // conditional ("if web/ exists, its suites are reachable") and vacuously true
 // there — but say so out loud rather than skipping in silence.
+for (const name of WEB_PACKAGES) {
+const WEB = join(ROOT, name);
+const WEB_PKG = join(WEB, 'package.json');
 if (!existsSync(WEB_PKG)) {
-  pass('web/ is not present in this checkout — discovery contract not applicable');
+  pass(`${name}/ is not present in this checkout — discovery contract not applicable`);
 } else {
-  // ── Given: what is on disk, and what web/package.json claims to run ──
+  // ── Given: what is on disk, and what ${name}/package.json claims to run ──
 
   // Anything a contributor would reasonably expect to be run: the sanctioned
   // {module}.test.{ext} and the legacy test-{module}.{ext}. Non-.mjs
@@ -177,10 +180,10 @@ if (!existsSync(WEB_PKG)) {
   // ── Every suite sits where the glob can see it, under the right name ──
   scenario('where web suites live', () => {
     if (misplaced.length === 0) {
-      pass(`all ${found.length} web suites live under web/tests/ as {module}.test.mjs`);
+      pass(`all ${found.length} web suites live under ${name}/tests/ as {module}.test.mjs`);
     } else {
       fail(`web suites outside the discovered layout (#2360): ${misplaced.join(', ')}`
-        + ' — web tests live at web/tests/{dir}/{module}.test.mjs mirroring web/src/,'
+        + ` — web tests live at ${name}/tests/{dir}/{module}.test.mjs mirroring ${name}/src/,`
         + " and must end in .test.mjs for `npm test`'s glob to run them");
     }
   });
@@ -188,9 +191,9 @@ if (!existsSync(WEB_PKG)) {
   // ── The script discovers by pattern; it never lists suites by name ──
   scenario('that the test script names no suites', () => {
     if (enumerated.length === 0) {
-      pass('web/package.json test script enumerates no suites by name');
+      pass(`${name}/package.json test script enumerates no suites by name`);
     } else {
-      fail(`web/package.json test script names suites explicitly (#2360): ${enumerated.join(', ')}`
+      fail(`${name}/package.json test script names suites explicitly (#2360): ${enumerated.join(', ')}`
         + ' — a suite missing from a hand-maintained list never runs and `npm test` still exits 0;'
         + ' rely on the tests/**/*.test.mjs glob instead');
     }
@@ -200,7 +203,7 @@ if (!existsSync(WEB_PKG)) {
     if (patterns.length > 0) {
       pass(`web test script discovers by pattern (${patterns.join(', ')})`);
     } else {
-      fail('web/package.json test script declares no glob pattern (#2360)'
+      fail(`${name}/package.json test script declares no glob pattern (#2360)`
         + ' — expected something like: node --test "tests/**/*.test.mjs"');
     }
   });
@@ -212,7 +215,7 @@ if (!existsSync(WEB_PKG)) {
     if (found.length > 0) {
       pass(`web test discovery is non-empty (${found.length} suites on disk)`);
     } else {
-      fail('no web test suites found under web/ (#2360, #1440) — an empty glob exits 0,'
+      fail(`no web test suites found under ${name}/ (#2360, #1440) — an empty glob exits 0,`
         + ' so zero web coverage would look identical to a green run');
     }
   });
@@ -266,7 +269,7 @@ if (!existsSync(WEB_PKG)) {
     const declaredFloor = floorOf(engines);
     const required = GLOB_FLOOR.join('.');
     if (!declaredFloor) {
-      fail(`web/package.json declares no verifiable engines.node floor (#2360, got ${JSON.stringify(engines)})`
+      fail(`${name}/package.json declares no verifiable engines.node floor (#2360, got ${JSON.stringify(engines)})`
         + ` — its test script discovers by glob, which needs >=${required}. State it as a single`
         + ` \`>=<version>\` lower bound (an upper bound may follow); \`||\` alternatives are refused`
         + ' because they can admit an older Node than the first term suggests');
@@ -282,4 +285,5 @@ if (!existsSync(WEB_PKG)) {
         + ' does not expand CLI globs there, so `npm test` would find 0 suites and exit 1');
     }
   });
+}
 }

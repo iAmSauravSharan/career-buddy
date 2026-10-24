@@ -39,18 +39,18 @@ function matchesSomething(pattern) {
   return readdirSync(join(ROOT, dir)).some(name => re.test(name));
 }
 
-// web/ ships in the release tag but is not in update-system.mjs's manifest
-// (#3269), so an install updated with `apply` has no web/ directory. Its
-// CODEOWNERS entry is still correct for a full checkout; only the existence
-// check has to tolerate the documented absence, the way the web-dependent
-// suites do (#1675, #3563, #3608, #4165, #4706). When web/ is present the
-// check stays strict, so a pattern that stops matching is still caught.
-const webInstalled = existsSync(join(ROOT, 'web'));
-const absentOptionalPath = (p) => p === '/web/' && !webInstalled;
+// The web app (frontend/, backend/, shared/) ships in the release tag but is not
+// in update-system.mjs's manifest (#3269), so an install updated with `apply`
+// has none of them. Their CODEOWNERS entries are still correct for a full
+// checkout; only the existence check has to tolerate the documented absence,
+// the way the web-dependent suites do (#1675, #3563, #3608, #4165, #4706). When
+// a package is present the check stays strict, so a stale pattern is caught.
+const WEB_DIRS = ['frontend', 'backend', 'shared'];
+const absentOptionalPath = (p) => WEB_DIRS.some((d) => p === `/${d}/` && !existsSync(join(ROOT, d)));
 
 ok('every CODEOWNERS pattern matches a path that exists', () => {
   assert.ok(patterns.length > 10, 'CODEOWNERS parsed');
-  assert.ok(patterns.includes('/web/'), 'web/ is still owned');
+  for (const d of WEB_DIRS) assert.ok(patterns.includes(`/${d}/`), `${d}/ is still owned`);
   assert.deepEqual(patterns.filter(p => !absentOptionalPath(p) && !matchesSomething(p)), []);
 });
 

@@ -48,7 +48,7 @@ try {
 
   # Every account reads and runs the shared install; only Next.js' runtime cache is writable.
   icacls $home_ /grant '*S-1-5-32-545:(OI)(CI)RX' /T /C /Q | Out-Null
-  $cache = Join-Path $root 'web\.next\cache'
+  $cache = Join-Path $root 'frontend\.next\cache'
   New-Item -ItemType Directory -Force -Path $cache | Out-Null
   icacls $cache /grant '*S-1-5-32-545:(OI)(CI)M' /T /C /Q | Out-Null
   "Granted all users access to $home_."

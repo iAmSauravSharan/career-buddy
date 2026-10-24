@@ -1276,7 +1276,7 @@ async function main() {
   const datasetStatus = {};
 
   // Graceful stop for the web layer: it SIGTERMs us when its scan budget elapses
-  // (see web/src/lib/core/scan-timeout.mjs). A full sweep only prints its result
+  // (see backend/src/lib/core/scan-timeout.mjs). A full sweep only prints its result
   // at the very end, so a plain kill loses everything found so far. In --json mode
   // we instead flush the matches collected up to this point as a well-formed but
   // PARTIAL result (`stoppedEarly: true`) so the caller can still surface those

@@ -2,7 +2,7 @@ name: career-buddy CI
 
 # Fork-level CI: runs on every push to any branch and on every PR, so a change
 # is checked before it is merged (upstream's test.yml/web-ci.yml only fire on
-# PRs to main / web/** pushes to main). Kept in its own file so
+# PRs to main). Kept in its own file so
 # `git pull --rebase upstream main` never conflicts with upstream workflows.
 on:
   push:
@@ -33,12 +33,9 @@ jobs:
       - run: npm run lint
       - run: node test-all.mjs --quick
 
-  web:
-    name: web tests + typecheck + build
+  app:
+    name: shared + backend + frontend tests, typecheck, build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v7
         with:
@@ -47,8 +44,28 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+            shared/package-lock.json
+      # Backend tests run the real core scripts, which import the core's own
+      # dependencies; no browser download.
+      - run: npm install --ignore-scripts
       - run: npm ci
+        working-directory: shared
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
       - run: npm test
+        working-directory: shared
+      - run: npm test
+        working-directory: backend
+      - run: npm run typecheck
+        working-directory: backend
+      - run: npm test
+        working-directory: frontend
       - run: npx tsc --noEmit
+        working-directory: frontend
       - run: npm run build
+        working-directory: frontend

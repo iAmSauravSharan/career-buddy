@@ -1039,7 +1039,7 @@ export async function mergeTracker(options = {}) {
    * Leading zeros are DELIBERATELY allowed, and this is the reason the obvious
    * `/^[1-9]\d*$/` would be wrong here: `reserve-report-num.mjs` returns a
    * zero-padded 3-digit string (`padStart(3, '0')`), and both the batch prompt
-   * and `web/src/lib/run-prompts.mjs` hand that value straight to the `num` cell.
+   * and `backend/src/lib/run-prompts.mjs` hand that value straight to the `num` cell.
    * So `035` is the canonical shape of every report under 100, not a malformed
    * row, and rejecting it would drop those evaluations on the floor.
    *

@@ -135,13 +135,15 @@ test('the syntax gate reaches past the repository root', () => {
   assert.ok(files.some((f) => f.startsWith('providers/')), 'providers/ must be inside the gate');
   assert.ok(files.some((f) => f.startsWith('lib/')), 'lib/ must be inside the gate');
 
-  // web/ is the one opt-in subproject in this list (#2360): tests/, providers/
-  // and lib/ ship with every install, but a checkout that never took the web UI
-  // has no web/ on disk. Assert it's inside the gate when it exists; when it
-  // doesn't, the invariant is vacuously true — the same conditional the adjacent
-  // 'web/ test discovery contract' check already uses instead of hardcoding it.
-  if (existsSync(join(ROOT, 'web'))) {
-    assert.ok(files.some((f) => f.startsWith('web/')), 'web/ must be inside the gate when present');
+  // The web app packages are the opt-in subprojects in this list (#2360):
+  // tests/, providers/ and lib/ ship with every install, but a checkout that
+  // never took the web UI has no frontend/, backend/ or shared/ on disk. Assert
+  // each is inside the gate when it exists; when it doesn't, the invariant is
+  // vacuously true — the same conditional the web test discovery contract uses.
+  for (const dir of ['frontend', 'backend', 'shared']) {
+    if (existsSync(join(ROOT, dir))) {
+      assert.ok(files.some((f) => f.startsWith(`${dir}/`)), `${dir}/ must be inside the gate when present`);
+    }
   }
 });
 

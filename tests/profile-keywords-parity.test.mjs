@@ -1,9 +1,9 @@
-// tests/profile-keywords-parity.test.mjs — web/src/lib/profile-keywords.mjs
+// tests/profile-keywords-parity.test.mjs — backend/src/lib/profile-keywords.mjs
 // must agree with providers/_profile-keywords.mjs on `target_roles`.
 //
 // The web app cannot import the core helper at build time: Turbopack's root is
 // pinned to web/ and refuses modules outside it (see web/next.config.mjs, and
-// web/src/lib/tracker-table.mjs's header for the same constraint). So the web
+// backend/src/lib/tracker-table.mjs's header for the same constraint). So the web
 // carries a mirror — and a mirror is exactly the thing that drifts. It already
 // did: the inline version this replaced read `primary` as a string when it is a
 // list, and spread `archetypes` raw when its entries are objects, so the
@@ -38,11 +38,11 @@ console.log('\nprofile-keywords — web mirror vs core helper');
 // freeze: an absent web/ is a real absence, but a mirror missing under a
 // present web/ is a move, and a skip is how a parity freeze quietly stops
 // guarding.
-const WEB_MIRROR = join(ROOT, 'web', 'src', 'lib', 'profile-keywords.mjs');
-if (!existsSync(join(ROOT, 'web', 'src'))) {
+const WEB_MIRROR = join(ROOT, 'backend', 'src', 'lib', 'profile-keywords.mjs');
+if (!existsSync(join(ROOT, 'frontend', 'src'))) {
   warn('web/ not present in this checkout — skipping the profile-keywords parity check');
 } else if (!existsSync(WEB_MIRROR)) {
-  fail('web/ exists but web/src/lib/profile-keywords.mjs is missing — the parity check cannot verify (moved?)');
+  fail('web/ exists but backend/src/lib/profile-keywords.mjs is missing — the parity check cannot verify (moved?)');
 } else {
   const { profileTargetKeywords: web } = await import(pathToFileURL(WEB_MIRROR).href);
 
