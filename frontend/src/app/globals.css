@@ -2,27 +2,48 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Design tokens — inherited from career-ops-docs. Brand burnt-orange #dd7627
-   (mode-invariant), zinc neutrals, light + dark (Fumadocs neutral values).
+   Design tokens. A calm neutral canvas with white cards, near-black text and
+   one accent: the brand orange, darkened in light mode so white text on it
+   passes WCAG AA (5.2:1) and lightened in dark mode with dark text on it.
+   Every colour is a runtime variable so the theme class swaps all of them.
+   Contrast targets: body text ≥ 7:1, secondary text ≥ 4.5:1 on every surface.
    ────────────────────────────────────────────────────────────────────────── */
 @theme {
-  --color-brand: hsl(26 73% 51%);
-  --color-brand-200: hsl(33 100% 60%); /* hover / lighter */
-  /* Near-black on the brand orange: 5.2:1 on brand, 8.3:1 on brand-200 hover
-     (white was 3.14:1, an AA fail in BOTH themes since the button is the same).
-     The brand orange itself is untouched — only what sits on top of it. */
-  --color-brand-foreground: hsl(24 30% 12%);
-  --color-brand-soft: hsl(26 73% 51% / 0.12);
-  --color-brand-secondary: #fc7744;
-
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
-  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  /* Headings use the UI face, set heavier and tighter (see .font-display below). */
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  /* Type scale, designed at 390px first. Five steps, one job each:
+     display = page title, title = card / sheet title, heading = list item or
+     section, body = reading text, caption = meta and hints (never smaller). */
+  --text-display: 1.625rem;
+  --text-display--line-height: 2rem;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 650;
+  --text-title: 1.125rem;
+  --text-title--line-height: 1.5rem;
+  --text-title--letter-spacing: -0.01em;
+  --text-title--font-weight: 600;
+  --text-heading: 0.9375rem;
+  --text-heading--line-height: 1.375rem;
+  --text-heading--font-weight: 600;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.3125rem;
+  --text-caption: 0.78125rem;
+  --text-caption--line-height: 1.125rem;
 }
 
-/* Semantic surfaces reference runtime vars so they swap with the theme class. */
 @theme inline {
+  --color-brand: var(--brand);
+  --color-brand-200: var(--brand-hover); /* hover state of a brand surface */
+  --color-brand-foreground: var(--brand-fg); /* text on a brand surface */
+  --color-brand-soft: var(--brand-soft); /* tinted background for selected items */
+  --color-brand-secondary: var(--brand);
+  /* Brand as small text on neutral surfaces: darker than --brand in light. */
+  --color-brand-text: var(--brand-text);
+
   --color-background: var(--bg);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
@@ -30,41 +51,44 @@
   --color-foreground: var(--fg);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
-  --color-landing: var(--landing); /* editorial olive (light) / cream (dark) — docs landing-foreground */
-  /* Brand as SMALL TEXT: the raw orange only passes AA in dark (4.95); in light
-     it's 2.6-3.1 on cream/white. brand-text darkens it for light and keeps the
-     raw brand in dark. Use for small text/badges; brand stays for accents,
-     surfaces, icons and large headings (≥24px passes at 3:1). */
-  --color-brand-text: var(--brand-text);
+  --color-landing: var(--landing); /* page headings */
 }
 
 :root {
-  --bg: #f7f6f3; /* warm off-white (docs stone tone) */
+  --bg: #f3f4f6; /* canvas: cool light grey, cards sit on it in white */
   --surface: #ffffff;
-  --surface-hover: #efeeea;
-  --border: hsl(40 9% 86%);
-  --fg: hsl(30 10% 11%); /* warm near-black, high legibility */
-  --muted: hsl(35 9% 34%); /* darker than before for readable body text */
-  --faint: hsl(35 7% 42%); /* AA: ~4.6:1 on #fff (was 50% ≈ 3.9:1, failed small text) */
-  --landing: #59592a; /* olive editorial headline */
-  --brand-text: hsl(26 80% 36%); /* darkened brand for small text: 5.5 white / 5.1 cream / 4.7 surface-hover */
-  --dot: 40 8% 42% / 0.09;
-  --pre-bg: #f2f1ed;
+  --surface-hover: #eef0f3;
+  --border: #dde0e6;
+  --fg: #0f1115; /* 18.9:1 on white */
+  --muted: #3d4350; /* 10.4:1 on white, 9.4:1 on canvas */
+  --faint: #555c69; /* 6.7:1 on white, 6.0:1 on canvas */
+  --landing: #0f1115;
+  --brand: #c2410c; /* white on it: 5.2:1 */
+  --brand-hover: #9a3412;
+  --brand-fg: #ffffff;
+  --brand-soft: rgb(194 65 12 / 0.09);
+  --brand-text: #9a3412; /* 7.3:1 on white */
+  --dot: 220 9% 46% / 0.08;
+  --pre-bg: #f3f4f6;
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0a0a0a;
-  --surface: #161616;
-  --surface-hover: #232323;
-  --border: #262626;
-  --fg: #fafafa;
-  --muted: #a1a1aa;
-  --faint: #8b8b95; /* AA: ~4.6:1 on #161616 (was #71717a ≈ 3.7:1, failed small text) */
-  --landing: #e4e2d0; /* cream editorial headline */
-  --brand-text: hsl(26 73% 51%); /* raw brand already passes in dark (≥4.95 on bg/surface) */
-  --dot: 240 5% 65% / 0.10;
-  --pre-bg: #111111;
+  --bg: #0c0d10;
+  --surface: #16181c;
+  --surface-hover: #1f2228;
+  --border: #2b2f36;
+  --fg: #f4f5f7; /* 16.8:1 on surface */
+  --muted: #c4c8d0; /* 10.6:1 on surface */
+  --faint: #9ba1ac; /* 6.6:1 on surface */
+  --landing: #f4f5f7;
+  --brand: #fb923c; /* dark text on it: 8.9:1 */
+  --brand-hover: #fdba74;
+  --brand-fg: #1c0d02;
+  --brand-soft: rgb(251 146 60 / 0.13);
+  --brand-text: #fdba74; /* 10.2:1 on surface */
+  --dot: 220 9% 65% / 0.08;
+  --pre-bg: #111317;
   color-scheme: dark;
 }
 
@@ -77,6 +101,36 @@ body {
 html {
   scrollbar-gutter: stable;
 }
+
+/* Headings: the UI face, heavier and slightly tighter. */
+.font-display {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* One visible focus style everywhere a component did not set its own. In the
+   base layer so a component's own focus utility (a ring, outline-none) wins. */
+@layer base {
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+}
+
+/* Skip link: hidden until focused from the keyboard. */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -3rem;
+  z-index: 100;
+  border-radius: 0.5rem;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.skip-link:focus { top: 0.75rem; }
 
 @layer utilities {
   .font-serif-italic {
@@ -323,3 +377,10 @@ html.dark .co-cost[data-tone="free"]{color:hsl(158 64% 60%);background:hsl(158 6
 .co-cost[data-tone="spend"]{color:hsl(35 9% 34%);background:hsl(35 8% 46% / .12);border-color:hsl(35 8% 46% / .26)}
 html.dark .co-cost[data-tone="spend"]{color:hsl(35 8% 70%);background:hsl(35 6% 60% / .12);border-color:hsl(35 6% 60% / .24)}
 .co-cost svg{width:.85em;height:.85em}
+
+/* Bottom tab bar (phones only, see components/shell/bottom-tabs.tsx). Its height
+   is a variable so floating controls (assistant, back-to-top, beta pill, trays)
+   can sit above it with bottom-[calc(var(--tabbar-h)+…)], and so <main> can pad
+   its last row clear of it. Zero from md up, where the sidebar takes over. */
+:root { --tabbar-h: calc(4rem + env(safe-area-inset-bottom)); }
+@media (min-width: 768px) { :root { --tabbar-h: 0px; } }

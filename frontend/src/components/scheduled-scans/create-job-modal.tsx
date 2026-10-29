@@ -99,7 +99,7 @@ export function CreateJobModal({
                 <option value="full">Full ATS Dataset Sweep</option>
                 <option value="portals">Zero-Token Portals.yml</option>
               </select>
-              <p className="mt-1 text-[11px] text-faint">
+              <p className="mt-1 text-xs text-faint">
                 {engine === "full"
                   ? "Sweeps public Greenhouse/Lever/Ashby datasets."
                   : "Scans pre-configured portals.yml companies (0 AI cost)."}
@@ -134,7 +134,7 @@ export function CreateJobModal({
           </div>
 
           {/* ─── Reuse FilterBuilder from Explore ─── */}
-          <div className="rounded-xl border border-border bg-surface/30 p-4">
+          <div className="rounded-xl border border-border bg-surface p-4">
             <FilterBuilder filters={filters} onChange={setFilters} />
           </div>
 

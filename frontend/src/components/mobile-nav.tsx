@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Bug, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CoMark } from "@/components/co-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WorkerPills } from "@/components/jobs/worker-pills";
 import { UsageMeter } from "@/components/usage-meter";
-import { instrumentSerif } from "@/lib/fonts";
-import { visibleNavItems, isActivePath } from "@/lib/nav-items";
-import { useJobs } from "@/components/jobs/job-store";
+import { visibleNavGroups, isActivePath, SETTINGS_ITEM } from "@/lib/nav-items";
+import { setMenuOpen, useMenuOpen } from "@/lib/menu-store";
+import { openBetaReport, useBetaLabel } from "@/lib/beta-store";
 
-// Mobile navigation (< md): a glass top bar + a right-side slide-over drawer that
-// mirrors the desktop sidebar (nav + workers + usage + theme). Premium details:
+// Mobile navigation (< md): a slim top bar + a right-side slide-over drawer that
+// mirrors the desktop sidebar (nav + workers + usage + theme). The drawer opens
+// from the More tab of the bottom tab bar (lib/menu-store). Premium details:
 // spring slide, scrim blur, swipe-to-close, body scroll-lock, Escape, focus move,
 // safe-area insets (notch / home bar), worker pulse, reduced-motion aware.
 // Motion/inset CSS is co-located (env() insets + the Tailwind v4 stale-CSS HMR gotcha).
@@ -32,14 +33,16 @@ const STYLE = `
 .co-pulse{animation:co-pulse 1.6s ease-in-out infinite}
 @keyframes co-pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @media(prefers-reduced-motion:reduce){.co-mdrawer,.co-mscrim{transition:none}.co-pulse{animation:none}}
+/* The drawer's own display:flex would beat md:hidden; the sidebar owns md+. */
+@media(min-width:768px){.co-mdrawer,.co-mscrim{display:none}}
 `;
 
 export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const open = useMenuOpen();
+  const betaLabel = useBetaLabel();
+  const setOpen = setMenuOpen;
   const panelRef = useRef<HTMLElement>(null);
-  const { jobs } = useJobs();
-  const running = jobs.filter((j) => j.status === "running").length;
 
   // Close on route change.
   useEffect(() => {
@@ -49,6 +52,7 @@ export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
   // Scroll-lock + Escape + move focus into the drawer while open.
   useEffect(() => {
     if (!open) return;
+    const opener = document.activeElement;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
@@ -77,6 +81,8 @@ export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
       document.body.style.overflow = prevOverflow;
       document.removeEventListener("keydown", onKey);
       window.clearTimeout(t);
+      // Hand focus back to the More tab that opened the drawer.
+      if (opener instanceof HTMLElement) opener.focus();
     };
   }, [open]);
 
@@ -107,20 +113,10 @@ export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
       <header className="co-mnav flex items-center gap-2 border-b border-border px-4 pb-3 md:hidden">
         <Link href="/" className="flex min-h-[44px] items-center gap-2" aria-label="career-buddy home">
           <CoMark size={26} />
-          <span className={`${instrumentSerif.className} relative -top-px text-xl text-landing`}>career-buddy</span>
+          <span className="text-lg font-semibold tracking-tight text-foreground">career-buddy</span>
         </Link>
         <div className="ml-auto flex items-center gap-0.5">
           <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-label="Open menu"
-            aria-expanded={open}
-            className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
-          >
-            <Menu className="size-5" />
-            {running > 0 && <span aria-hidden className="co-pulse absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-surface" />}
-          </button>
         </div>
       </header>
 
@@ -138,7 +134,7 @@ export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
         onTouchEnd={onTouchEnd}
       >
         <div className="flex items-center justify-between px-4 py-3">
-          <span className={`${instrumentSerif.className} text-lg text-landing`}>Menu</span>
+          <span className="text-base font-semibold text-foreground">Menu</span>
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -149,30 +145,30 @@ export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 px-3">
-          {visibleNavItems(followupsEnabled).map(({ href, label, icon: Icon, chip }) => {
-            const active = isActivePath(href, pathname);
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setOpen(false)}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] transition-colors",
-                  active ? "bg-brand-soft text-brand-text" : "text-muted hover:bg-surface-hover hover:text-foreground",
-                )}
-              >
-                <Icon className="size-5" />
-                {label}
-                {chip && (
-                  <span className="ml-auto rounded-full border border-brand/30 bg-brand-soft px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-text">
-                    {chip}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+        <nav className="flex flex-col px-3" aria-label="Primary">
+          {[...visibleNavGroups(followupsEnabled), { label: "Account", items: [SETTINGS_ITEM] }].map((group) => (
+            <div key={group.label} className="mt-3 first:mt-0">
+              <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-faint">{group.label}</p>
+              {group.items.map(({ href, label, icon: Icon }) => {
+                const active = isActivePath(href, pathname);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium transition-colors",
+                      active ? "bg-brand-soft text-brand-text" : "text-muted hover:bg-surface-hover hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="size-5" />
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="px-3">
@@ -181,10 +177,23 @@ export function MobileNav({ followupsEnabled }: { followupsEnabled: boolean }) {
 
         <div className="co-msafe mt-auto space-y-3 border-t border-border px-4 pt-4">
           <UsageMeter />
+          {betaLabel && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openBetaReport();
+              }}
+              className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+            >
+              <Bug className="size-5" />
+              <span className="flex-1 text-left">Report a bug</span>
+              <span className="text-xs font-normal text-faint">{betaLabel}</span>
+            </button>
+          )}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className={`${instrumentSerif.className} text-sm text-faint`}>local-first · v0</span>
-              <span className="font-mono text-[10px] text-faint">THEME</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-faint">Appearance</span>
             </div>
             <ThemeToggle showLabel className="bg-surface-hover/40" />
           </div>

@@ -279,7 +279,7 @@ test("worker dismiss stays discoverable without hover and by keyboard", { skip: 
         const tray = mode.width < 768
           ? page.getByRole("dialog", { name: "Navigation menu", exact: true })
           : page.getByRole("complementary");
-        if (mode.width < 768) await page.getByRole("button", { name: "Open menu", exact: true }).tap();
+        if (mode.width < 768) await page.getByRole("button", { name: "More", exact: true }).tap();
         const dismiss = tray.getByRole("button", { name: "Dismiss worker: Fictional evaluation · Engineer", exact: true });
         await dismiss.waitFor();
         async function until(check, message) {

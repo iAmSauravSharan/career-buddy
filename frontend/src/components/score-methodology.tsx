@@ -26,7 +26,7 @@ const BLOCKS: [string, string][] = [
 
 export function ScoreMethodology() {
   return (
-    <details className="group mt-10 overflow-hidden rounded-2xl border border-border bg-surface/30">
+    <details className="group mt-10 overflow-hidden rounded-xl border border-border bg-surface">
       <summary className="flex cursor-pointer list-none items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-surface-hover">
         How career-buddy scored this — and why it&apos;s for <span className="text-landing">you</span>
         <ChevronDown className="ml-auto size-4 text-faint transition-transform group-open:rotate-180" />

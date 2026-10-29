@@ -223,7 +223,7 @@ export function FollowupsView() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search company or role…"
-            className="w-full rounded-md border border-border bg-surface/60 py-2 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="w-full rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/40"
           />
         </div>
       </div>
@@ -260,9 +260,9 @@ export function FollowupsView() {
           <EmptyPanel title="Nothing to chase" body="No active applications need a follow-up. Apply to roles (or update statuses) and the cadence starts tracking them." />
         )
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-border">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-border">
           <table className="w-full min-w-[880px] text-sm">
-            <thead className="bg-surface/60 text-left text-xs uppercase tracking-wide text-faint">
+            <thead className="bg-surface text-left text-xs uppercase tracking-wide text-faint">
               <tr>
                 <th className="w-8 px-2 py-2.5" aria-label="Expand" />
                 {COLUMNS.map((c) => {
@@ -311,7 +311,7 @@ export function FollowupsView() {
         <section className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Upcoming</h2>
           <p className="mt-1 text-xs text-faint">These have a next date and are not due yet.</p>
-          <ul className="mt-3 divide-y divide-border rounded-2xl border border-border">
+          <ul className="mt-3 divide-y divide-border rounded-xl border border-border">
             {upcoming.map((entry) => (
               <li key={entry.num} className="flex flex-wrap items-baseline justify-between gap-2 px-4 py-3 text-sm">
                 <Link href={`/pipeline/${entry.num}`} className="font-medium text-foreground hover:text-brand">
@@ -359,7 +359,7 @@ function NarrativeCard({ meta, entries }: { meta: CadenceMetadata; entries: Cade
   return (
     <div
       className={cn(
-        "mt-5 rounded-xl border border-border border-l-4 bg-surface/40 px-4 py-3 text-sm text-muted",
+        "mt-5 rounded-xl border border-border border-l-4 bg-surface px-4 py-3 text-sm text-muted",
         meta.overdue > 0 ? "border-l-red-500" : "border-l-amber-500",
       )}
     >
@@ -389,7 +389,7 @@ function FollowupRow({
   const Chevron = expanded ? ChevronDown : ChevronRight;
   return (
     <>
-      <tr className="group transition-colors hover:bg-surface/40">
+      <tr className="group transition-colors hover:bg-surface-hover">
         <td className="px-2 py-3">
           <button
             type="button"
@@ -479,7 +479,7 @@ function FollowupRow({
         </td>
       </tr>
       {expanded && (
-        <tr className="bg-surface/30">
+        <tr className="bg-surface">
           <td colSpan={COLUMNS.length + 2} className="px-4 py-3">
             <HistoryPanel entry={e} onRemove={onRemove} />
           </td>
@@ -543,7 +543,7 @@ function HistoryPanel({ entry: e, onRemove }: { entry: CadenceEntry; onRemove: (
 
 function EmptyPanel({ title, body }: { title: string; body: string }) {
   return (
-    <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface/30 px-6 py-12 text-center">
+    <div className="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
       <p className="font-display text-lg">{title}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted">{body}</p>
     </div>

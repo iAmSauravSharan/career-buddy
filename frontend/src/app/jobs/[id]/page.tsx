@@ -6,7 +6,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, Loader2, Wrench, CircleDot, Check, X } from "lucide-react";
 import { useJobs } from "@/components/jobs/job-store";
-import { HeroGlow } from "@/components/hero-glow";
 import { Badge } from "@/components/ui/badge";
 
 export default function JobPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +17,7 @@ export default function JobPage({ params }: { params: Promise<{ id: string }> })
     return (
       <div className="mx-auto max-w-3xl px-6 py-10">
         <Link href="/pipeline" className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-brand">
-          <ArrowLeft className="size-4" /> Pipeline
+          <ArrowLeft className="size-4" /> Applications
         </Link>
         <p className="mt-8 text-sm text-muted">
           This worker is no longer in memory (it finished earlier or the page was reloaded).
@@ -30,11 +29,10 @@ export default function JobPage({ params }: { params: Promise<{ id: string }> })
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
       <Link href="/pipeline" className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-brand">
-        <ArrowLeft className="size-4" /> Pipeline
+        <ArrowLeft className="size-4" /> Applications
       </Link>
 
-      <section className="dot-bg relative mt-5 overflow-hidden rounded-2xl border border-border bg-surface/40 px-6 py-7">
-        {job.status === "running" && <HeroGlow />}
+      <section className="relative mt-5 overflow-hidden rounded-xl border border-border bg-surface px-6 py-7">
         <div className="relative z-10">
           <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-faint">
             {job.status === "running" ? (
@@ -79,7 +77,7 @@ export default function JobPage({ params }: { params: Promise<{ id: string }> })
       {job.text && (
         <div className="mt-8">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Output</h2>
-          <div className="report-prose mt-3 rounded-2xl border border-border bg-surface/40 p-5">
+          <div className="report-prose mt-3 rounded-xl border border-border bg-surface p-5">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{job.text}</ReactMarkdown>
           </div>
         </div>

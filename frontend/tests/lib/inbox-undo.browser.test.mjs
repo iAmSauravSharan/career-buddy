@@ -41,7 +41,7 @@ test("Inbox Undo remains retryable after failure", { skip: !url || !root, timeou
     const response = await page.request.post(`${origin.origin}/api/inbox/skip`, { data: { url: `https://example.com/fixture-${company}`, done: false } });
     assert.equal(response.ok(), true);
   }
-  await page.goto(`${origin.origin}/pipeline`);
+  await page.goto(`${origin.origin}/explore?tab=new`);
 
   let restores = 0;
   const gate = new Promise((resolve) => { release = resolve; });
@@ -78,7 +78,7 @@ test("Inbox Undo remains retryable after failure", { skip: !url || !root, timeou
   await page.setViewportSize({ width: 390, height: 844 });
   await row("Fixture Beta").getByTitle("Skip — hide from the inbox").click();
   await until(() => fs.readFileSync(pipeline, "utf8").includes("[x] https://example.com/fixture-beta"));
-  await page.getByText("Your inbox is empty.", { exact: true }).waitFor();
+  await page.getByText("No new jobs right now", { exact: true }).waitFor();
   assert.equal(await undo().isVisible(), true);
   assert.equal(await undo().evaluate((el) => el.getBoundingClientRect().height >= 44), true);
   await undo().click();

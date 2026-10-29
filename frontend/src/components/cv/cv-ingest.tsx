@@ -7,7 +7,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Upload, FileText, Loader2, Check, AlertTriangle, Lock, ArrowRight, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { instrumentSerif } from "@/lib/fonts";
 import { cvReadiness, parseCvStream, type CvSeed } from "@/lib/cv/quality";
 import { ingestErrorMessage } from "@/lib/cv/ingest-error.mjs";
 import { DEFAULT_FILTERS, filtersToParams } from "@shared/explore";
@@ -233,12 +232,12 @@ export function CvIngest({ onSaved, stay = false }: { onSaved?: (markdown: strin
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface/50 px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-brand/40 hover:text-brand max-sm:min-h-[44px] max-sm:px-4"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-brand/40 hover:text-brand max-sm:min-h-[44px] max-sm:px-4"
             >
               <Upload className="size-3.5" /> Upload PDF / file
             </button>
             <input ref={fileRef} type="file" accept=".pdf,.md,.markdown,.txt,.docx" hidden onChange={(e) => e.target.files?.[0] && ingestFile(e.target.files[0])} />
-            <span className="inline-flex items-center gap-1 text-[11px] text-faint">
+            <span className="inline-flex items-center gap-1 text-xs text-faint">
               <Lock className="size-3" /> Stays on your machine. Parsed by your own AI.
             </span>
             <button
@@ -272,31 +271,31 @@ export function CvIngest({ onSaved, stay = false }: { onSaved?: (markdown: strin
   // ── PARSING (the 10s bridge) ──
   if (phase === "parsing") {
     return (
-      <div className="rounded-2xl border border-border bg-surface/60 p-6 backdrop-blur-sm">
+      <div className="rounded-xl border border-border bg-surface p-6 backdrop-blur-sm">
         <style>{STYLE}</style>
         <div className="flex items-center gap-2.5">
           <Loader2 className="size-4 animate-spin text-brand" />
-          <span className={`${instrumentSerif.className} text-lg text-foreground`}>{trace || "Reading your CV…"}</span>
+          <span className={`font-display text-lg text-foreground`}>{trace || "Reading your CV…"}</span>
         </div>
-        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
           <span className="size-1.5 rounded-full bg-emerald-500" /> 0 tokens · $0.00 · local
         </div>
-        {md && <div className="co-cvtrace mt-4 max-h-40 overflow-hidden rounded-lg border border-border bg-surface/40 p-3 text-[11px] text-faint">{md.slice(0, 400)}…</div>}
+        {md && <div className="co-cvtrace mt-4 max-h-40 overflow-hidden rounded-lg border border-border bg-surface p-3 text-xs text-faint">{md.slice(0, 400)}…</div>}
       </div>
     );
   }
 
   // ── REVIEW (propose → confirm) ──
   return (
-    <div className="rounded-2xl border border-border bg-surface/60 p-4 backdrop-blur-sm md:p-5">
+    <div className="rounded-xl border border-border bg-surface p-4 backdrop-blur-sm md:p-5">
       <style>{STYLE}</style>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <FileText className="size-4 text-brand" />
-        <h3 className={`${instrumentSerif.className} text-lg text-foreground`}>Here&apos;s your CV — review and save</h3>
+        <h3 className={`font-display text-lg text-foreground`}>Here&apos;s your CV — review and save</h3>
         {readiness && (
           <span
             className={cn(
-              "ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+              "ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
               readiness.scoreable ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
             )}
           >
@@ -315,9 +314,9 @@ export function CvIngest({ onSaved, stay = false }: { onSaved?: (markdown: strin
         <textarea
           value={md}
           onChange={(e) => setMd(e.target.value)}
-          className="h-72 w-full resize-none rounded-lg border border-border bg-surface/40 p-3 font-mono text-[12px] leading-relaxed outline-none focus:border-brand/40"
+          className="h-72 w-full resize-none rounded-lg border border-border bg-surface p-3 font-mono text-[12px] leading-relaxed outline-none focus:border-brand/40"
         />
-        <div className="prose prose-sm dark:prose-invert h-72 max-w-none overflow-y-auto rounded-lg border border-border bg-surface/40 p-3 text-[13px]">
+        <div className="prose prose-sm dark:prose-invert h-72 max-w-none overflow-y-auto rounded-lg border border-border bg-surface p-3 text-[13px]">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
         </div>
       </div>
@@ -342,7 +341,7 @@ export function CvIngest({ onSaved, stay = false }: { onSaved?: (markdown: strin
         >
           <RotateCcw className="size-3.5" /> Start over
         </button>
-        <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-faint">
+        <span className="ml-auto inline-flex items-center gap-1 text-xs text-faint">
           <Lock className="size-3" /> Saved locally to cv.md
         </span>
       </div>

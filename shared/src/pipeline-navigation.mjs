@@ -1,6 +1,6 @@
 // Carry only the list's own filters through a report URL. Return destinations
 // remain fixed to /pipeline; no arbitrary "returnTo" URL or browser storage.
-const FILTER_KEYS = ["tab", "min", "sort", "dir", "q"];
+const FILTER_KEYS = ["tab", "min", "sort", "dir", "view", "q"];
 
 /**
  * @param {string | Record<string, string | string[] | undefined>} params
@@ -22,7 +22,8 @@ export function pipelineQuery(params, search) {
   return query.toString();
 }
 
-// INBOX (the triage queue) is the default tab; the rest filter the tracker.
+// ALL is the default tab. INBOX stays a known value only so old links can be
+// redirected to Find jobs, where the inbox lives now.
 export const PIPELINE_TABS = /** @type {const} */ ([
   "INBOX",
   "ALL",
@@ -40,11 +41,11 @@ export const PIPELINE_TABS = /** @type {const} */ ([
 
 /**
  * The tab a `?tab=` value selects. The server page and the client view both
- * call this, so they agree on which tab shows the inbox.
+ * call this, so they agree on which tab is showing.
  * @param {string | string[] | null | undefined} raw
  * @returns {(typeof PIPELINE_TABS)[number]}
  */
 export function pipelineTab(raw) {
   const value = String((Array.isArray(raw) ? raw[0] : raw) ?? "").toUpperCase();
-  return PIPELINE_TABS.find((t) => t === value) ?? "INBOX";
+  return PIPELINE_TABS.find((t) => t === value) ?? "ALL";
 }

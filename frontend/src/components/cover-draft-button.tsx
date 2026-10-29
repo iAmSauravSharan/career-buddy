@@ -100,7 +100,7 @@ export function CoverDraftButton({ n, company }: { n: string; company: string })
         </Link>
       )}
       {open && (
-        <form onSubmit={submit} aria-label="Cover letter questions" className="basis-full rounded-2xl border border-border bg-surface/50 p-4">
+        <form onSubmit={submit} aria-label="Cover letter questions" className="basis-full rounded-xl border border-border bg-surface p-4">
           {QUESTIONS.map((q) => (
             <label key={q.name} className="mb-3 block text-sm font-medium text-foreground">
               {q.label}

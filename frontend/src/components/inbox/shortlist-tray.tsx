@@ -36,9 +36,9 @@ export function ShortlistTray({
   const costText = formatRunCostEstimate(estimate);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 sm:bottom-4">
+    <div className="fixed inset-x-0 bottom-[var(--tabbar-h)] z-30 sm:bottom-[calc(var(--tabbar-h)+1rem)]">
       <div className="mx-auto max-w-3xl sm:px-6">
-        <div className="border-t border-border bg-surface shadow-lg shadow-black/10 sm:rounded-2xl sm:border">
+        <div className="border-t border-border bg-surface shadow-lg shadow-black/10 sm:rounded-xl sm:border">
           {/* expandable saved-items list */}
           {open && (
             <ul className="max-h-64 divide-y divide-border overflow-y-auto px-3 py-1">
@@ -96,7 +96,7 @@ export function ShortlistTray({
           </div>
 
           {/* cost line — always visible on mobile (where it doesn't fit in the button) */}
-          <div className="flex items-center gap-2 border-t border-border/60 px-3 py-1.5 text-[11px] text-muted sm:hidden">
+          <div className="flex items-center gap-2 border-t border-border/60 px-3 py-1.5 text-xs text-muted sm:hidden">
             <CostBadge kind="spend" size="xs" />
             <span>{costText} — the only step that spends</span>
           </div>
@@ -134,7 +134,7 @@ function ConfirmScore({
   }
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden items-center gap-1 text-[11px] text-muted sm:inline-flex">
+      <span className="hidden items-center gap-1 text-xs text-muted sm:inline-flex">
         <Coins className="size-3.5 text-brand" /> {costText}
       </span>
       <button

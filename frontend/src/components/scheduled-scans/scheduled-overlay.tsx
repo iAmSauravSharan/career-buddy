@@ -52,7 +52,7 @@ export function ScheduledOverlay({
   if (!isOpen) return null;
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md transition-opacity ${overlayClassName}`} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-2xl ${panelClassName}`}>
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`relative max-h-[90vh] w-full overflow-y-auto rounded-xl border border-border bg-surface p-6 shadow-2xl ${panelClassName}`}>
         {children}
       </div>
     </div>

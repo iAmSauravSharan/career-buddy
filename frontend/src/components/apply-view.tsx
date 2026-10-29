@@ -37,7 +37,7 @@ export function ApplyView() {
   if (a.status === "idle" || a.status === "error") {
     return (
       <div>
-        <div className="flex max-w-2xl items-center gap-2 rounded-full border border-border bg-surface/70 py-1.5 pl-4 pr-1.5 shadow-sm transition focus-within:border-brand/50 focus-within:shadow-md">
+        <div className="flex max-w-2xl items-center gap-2 rounded-full border border-border bg-surface py-1.5 pl-4 pr-1.5 shadow-sm transition focus-within:border-brand/50 focus-within:shadow-md">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -91,7 +91,7 @@ export function ApplyView() {
 
       {!busy && (
         <div className="co-rise mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="font-display text-xl text-landing drop-shadow-sm">{a.title || "Application"}</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">{a.title || "Application"}</h2>
           <button onClick={a.reset} className="inline-flex items-center gap-1 text-xs text-faint transition-colors hover:text-foreground">
             <RotateCcw className="size-3" /> new
           </button>
@@ -146,14 +146,14 @@ export function ApplyView() {
           </div>
 
           {(prefilling || a.prefillLog.length > 0) && (
-            <details className="mb-4 rounded-lg border border-border bg-surface/60 backdrop-blur-sm" open={false}>
+            <details className="mb-4 rounded-lg border border-border bg-surface backdrop-blur-sm" open={false}>
               <summary className="flex cursor-pointer select-none items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted">
                 <Terminal className="size-3.5" /> Pre-fill diagnostics
                 {prefilling && <Loader2 className="size-3 animate-spin text-brand" />}
                 <span className="ml-auto text-faint">{a.prefillLog.length} steps</span>
               </summary>
               <div className="max-h-52 overflow-y-auto border-t border-border px-3 py-2">
-                <ol className="space-y-0.5 font-mono text-[11px] leading-relaxed text-muted">
+                <ol className="space-y-0.5 font-mono text-xs leading-relaxed text-muted">
                   {a.prefillLog.map((l, i) => (
                     <li key={i} className={l.startsWith("✗") ? "text-amber-600 dark:text-amber-400" : ""}>
                       {l}
@@ -167,7 +167,7 @@ export function ApplyView() {
 
           {/* the questions — float on the blurred form image, cascade in, each
               flashes brand-orange the instant its drafted answer lands */}
-          <div className="space-y-1 rounded-2xl border border-border/70 bg-surface/80 p-2 shadow-2xl shadow-black/10 backdrop-blur-md sm:p-3">
+          <div className="space-y-1 rounded-xl border border-border/70 bg-surface p-2 shadow-2xl shadow-black/10 backdrop-blur-md sm:p-3">
             {a.fields.map((f, i) => (
               <div key={f.id} className="co-rise rounded-xl px-3 py-2.5" style={{ animationDelay: `${Math.min(i * 45, 700)}ms` }}>
                 <FieldRow
@@ -186,7 +186,7 @@ export function ApplyView() {
             <button
               onClick={a.fill}
               disabled={filling || prefilling}
-              className="inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-brand-foreground shadow-lg shadow-brand/25 transition-all hover:bg-brand-200 hover:shadow-brand/40 disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200 disabled:opacity-50"
             >
               {filling ? <Loader2 className="size-4 animate-spin" /> : <ArrowUpRight className="size-4" />}
               {filling ? "Filling the real form…" : "Fill the real form & review"}
@@ -209,7 +209,7 @@ export function ApplyView() {
 
           {(filling || done) && a.steps.length > 0 && (
             <div className="co-rise mt-6">
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-faint">Behind the scenes</div>
+              <div className="mb-2 text-sm font-medium text-muted">Behind the scenes</div>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {a.steps.map((s, i) => (
                   <figure key={i} className="shrink-0">
@@ -219,7 +219,7 @@ export function ApplyView() {
                     ) : (
                       <div className="flex h-24 w-36 items-center justify-center rounded-md border border-dashed border-border text-faint">…</div>
                     )}
-                    <figcaption className={cn("mt-1 w-36 truncate text-[10px]", s.ok ? "text-faint" : "text-amber-500")}>{s.label || "field"}</figcaption>
+                    <figcaption className={cn("mt-1 w-36 truncate text-xs", s.ok ? "text-faint" : "text-amber-500")}>{s.label || "field"}</figcaption>
                   </figure>
                 ))}
               </div>
@@ -375,7 +375,7 @@ function DrivePanel({ steps, filling }: { steps: DriveStep[]; filling?: boolean 
           <span className="co-ring absolute inset-0 rounded-full border-2 border-brand/30 border-t-brand" />
           <MousePointerClick className="size-6 text-brand" />
         </span>
-        <div className="font-display text-2xl text-landing">{filling ? "AI is filling the form…" : "Reaching your form…"}</div>
+        <div className="text-2xl font-semibold tracking-tight text-foreground">{filling ? "AI is filling the form…" : "Reaching your form…"}</div>
         <p className="max-w-sm text-sm text-muted">{filling ? "The AI is driving the real form field-by-field on your machine — it never submits; you review and submit." : "The AI is navigating the real application on your machine to reach the form — it never submits."}</p>
       </div>
       {last?.thumb ? (
@@ -385,10 +385,10 @@ function DrivePanel({ steps, filling }: { steps: DriveStep[]; filling?: boolean 
         <div className="co-skel h-56 w-full rounded-xl" />
       )}
       {steps.length > 0 && (
-        <ol className="mt-3 space-y-1.5 rounded-xl border border-border/70 bg-surface/70 p-3 backdrop-blur-sm">
+        <ol className="mt-3 space-y-1.5 rounded-xl border border-border/70 bg-surface p-3 backdrop-blur-sm">
           {steps.map((s, i) => (
             <li key={i} className={cn("flex items-center gap-2 text-xs", i === steps.length - 1 ? "text-foreground" : "text-muted")}>
-              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-[10px] font-semibold text-brand">{s.turn}</span>
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text">{s.turn}</span>
               <span className="shrink-0 font-medium">{DRIVE_VERB[s.action] ?? s.action}</span>
               <span className="truncate text-faint">{s.detail}</span>
               {/* `submit-control` is the guard doing its job (good news, distinct
@@ -511,7 +511,7 @@ function ProcessingHero({ title, subtitle }: { title: string; subtitle: string }
         <span className="co-ring absolute inset-0 rounded-full border-2 border-brand/30 border-t-brand" />
         <Sparkles className="size-7 text-brand" />
       </span>
-      <div className="font-display text-3xl text-landing">{title}</div>
+      <div className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</div>
       <p className="max-w-sm text-sm text-muted">{subtitle}</p>
     </div>
   );
@@ -519,7 +519,7 @@ function ProcessingHero({ title, subtitle }: { title: string; subtitle: string }
 
 function FieldSkeleton() {
   return (
-    <div className="co-rise space-y-3 rounded-2xl border border-border/70 bg-surface/70 p-5 backdrop-blur-md" style={{ animationDelay: "120ms" }}>
+    <div className="co-rise space-y-3 rounded-xl border border-border/70 bg-surface p-5 backdrop-blur-md" style={{ animationDelay: "120ms" }}>
       {[64, 80, 48, 72, 56].map((w, i) => (
         <div key={i} className="space-y-2">
           <div className="co-skel h-3" style={{ width: `${w}px` }} />
@@ -571,7 +571,7 @@ function FieldRow({
   }, [value]);
 
   const base = cn(
-    "w-full rounded-lg border bg-surface/60 px-3 py-2 text-sm outline-none transition focus:border-brand/60 focus:ring-2 focus:ring-brand/20",
+    "w-full rounded-lg border bg-surface px-3 py-2 text-sm outline-none transition focus:border-brand/60 focus:ring-2 focus:ring-brand/20",
     needs ? "border-amber-500/50" : "border-border",
   );
   // While the planner is drafting, an empty answer shimmers like it's being
@@ -586,7 +586,7 @@ function FieldRow({
           <label htmlFor={controlId} className={f.label ? undefined : "text-faint"}>{labelText}</label>
         )}
         {f.required && <Asterisk aria-hidden="true" className="size-3 text-brand" />}
-        {needs && <span id={confirmationId} className="ml-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">you confirm</span>}
+        {needs && <span id={confirmationId} className="ml-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">you confirm</span>}
       </div>
       {writing ? (
         <div className={cn("co-skel", f.type === "textarea" ? "h-[68px]" : "h-9")} />

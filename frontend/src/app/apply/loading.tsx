@@ -11,7 +11,7 @@ export default function ApplyLoading() {
         <Skeleton className="mt-3 h-4 w-full max-w-xl" />
         <Skeleton className="mt-2 h-4 w-5/6 max-w-xl" />
 
-        <div className="mt-6 flex max-w-2xl items-center gap-2 rounded-full border border-border bg-surface/70 py-1.5 pl-4 pr-1.5 shadow-sm">
+        <div className="mt-6 flex max-w-2xl items-center gap-2 rounded-full border border-border bg-surface py-1.5 pl-4 pr-1.5 shadow-sm">
           <Skeleton className="size-4 shrink-0 rounded-full" />
           <Skeleton className="h-5 flex-1" />
           <Skeleton className="h-8 w-28 rounded-full" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Sparkles, Check, Circle, CircleDashed } from "lucide-react";
+import { Sparkles, Check, Circle, CircleDashed, ListChecks, ChevronDown } from "lucide-react";
 import { readSavedCliId } from "@/lib/saved-cli";
 
 // The "profile that grows while you talk": a live checklist of the four setup
@@ -71,51 +71,89 @@ export function OnboardingProgress({ compact = false }: { compact?: boolean }) {
   ];
   const kickoff = `Let's finish setting me up. Still to do: ${asks.join("; ")}. Walk me through it like a recruiter building my brief — one or two things at a time, propose what you infer from my CV, and let me confirm each piece. Don't ask for anything already on file.`;
 
+  const pct = Math.round((done / total) * 100);
+  const needsForm = missing.has("config/profile.yml") || missing.has("portals.yml");
+
+  // One compact card: how far along, the next step, and the full checklist
+  // behind a disclosure for anyone who wants the detail.
   return (
-    <aside className={`rounded-2xl border border-border bg-surface/40 ${compact ? "p-4" : "p-5"}`} aria-label="Setup progress">
+    <section
+      aria-labelledby="setup-progress-title"
+      className={`rounded-xl border border-border bg-surface shadow-[0_1px_2px_rgb(15_17_21/0.04)] ${compact ? "p-4" : "p-5"}`}
+    >
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-medium text-foreground">Your profile, as it takes shape</h2>
-        <span className="font-mono text-xs text-muted">{done}/{total}</span>
+        <h2 id="setup-progress-title" className="text-base font-semibold text-foreground">Finish setting up</h2>
+        <span className="text-sm font-medium tabular-nums text-muted">{pct}%</span>
       </div>
-      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-surface-hover">
-        <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${Math.round((done / total) * 100)}%` }} />
+      <p className="mt-1 text-sm text-muted">
+        {done} of {total} done. A complete profile makes every score more accurate.
+      </p>
+      <div
+        className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-hover"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={done}
+        aria-label="Setup progress"
+      >
+        <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${pct}%` }} />
       </div>
 
-      <ul className="mt-4 space-y-1.5 text-sm">
-        {PREREQS.map((p) => (
-          <Row key={p.key} state={missing.has(p.key) ? "missing" : "filled"} label={p.label} />
-        ))}
-        <li className="pt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-faint">personalization — what evaluations score against</li>
-        {sections.map((s) => (
-          <Row key={s.id} state={s.state} label={s.heading.replace(/^## Your /, "")} />
-        ))}
-      </ul>
+      <div className="mt-4 flex flex-col gap-2">
+        {needsForm && (
+          <a
+            href="/onboarding"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200"
+          >
+            <ListChecks className="size-4" /> Set up your profile
+          </a>
+        )}
+        {cli ? (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("co-assistant", { detail: { message: kickoff } }))}
+            className={
+              needsForm
+                ? "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
+                : "inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200"
+            }
+          >
+            <Sparkles className="size-4" /> Continue with the assistant
+          </button>
+        ) : (
+          <p className="text-sm text-muted">
+            <a href="/config" className="font-medium text-brand-text underline-offset-2 hover:underline">Connect your AI CLI</a> and the assistant fills in the rest with you.
+          </p>
+        )}
+      </div>
 
-      {cli ? (
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent("co-assistant", { detail: { message: kickoff } }))}
-          className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200"
-        >
-          <Sparkles className="size-4" /> Continue with the assistant
-        </button>
-      ) : (
-        <p className="mt-4 text-xs text-muted">
-          Connect your AI CLI in <a href="/config" className="text-foreground underline-offset-2 hover:underline">Config</a> and the assistant fills this in with you.
-        </p>
-      )}
-    </aside>
+      <details className="group mt-4 border-t border-border pt-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded text-sm font-medium text-muted hover:text-foreground">
+          What&apos;s left
+          <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
+        </summary>
+        <ul className="mt-3 space-y-2 text-sm">
+          {PREREQS.map((p) => (
+            <Row key={p.key} state={missing.has(p.key) ? "missing" : "filled"} label={p.label} />
+          ))}
+          <li className="pt-2 text-xs font-semibold uppercase tracking-[0.08em] text-faint">Personalization</li>
+          {sections.map((s) => (
+            <Row key={s.id} state={s.state} label={s.heading.replace(/^## Your /, "")} />
+          ))}
+        </ul>
+      </details>
+    </section>
   );
 }
 
 function Row({ state, label }: { state: "filled" | "template" | "missing"; label: string }) {
   const Icon = state === "filled" ? Check : state === "template" ? CircleDashed : Circle;
-  const tone = state === "filled" ? "text-foreground" : "text-muted";
-  const hint = state === "template" ? "still the example" : state === "missing" ? "not yet" : "";
+  const tone = state === "filled" ? "text-muted" : "text-foreground";
+  const hint = state === "template" ? "Still the example" : state === "missing" ? "Not started" : "Done";
   return (
     <li className={`flex items-center gap-2 ${tone}`}>
-      <Icon className={`size-3.5 shrink-0 ${state === "filled" ? "text-brand" : "text-faint"}`} aria-hidden />
+      <Icon className={`size-4 shrink-0 ${state === "filled" ? "text-emerald-700 dark:text-emerald-400" : "text-faint"}`} aria-hidden />
       <span className="truncate">{label}</span>
-      {hint && <span className="ml-auto shrink-0 text-[11px] text-faint">{hint}</span>}
+      <span className="ml-auto shrink-0 text-xs text-faint">{hint}</span>
     </li>
   );
 }

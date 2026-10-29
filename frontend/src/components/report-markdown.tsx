@@ -68,7 +68,7 @@ function StarCards({ header, rows }: { header: string[]; rows: string[][] }) {
         const story = iStory >= 0 ? row[iStory] : "";
         return (
           <li key={i}>
-            <details className="group overflow-hidden rounded-xl border border-border bg-surface/40">
+            <details className="group overflow-hidden rounded-xl border border-border bg-surface">
               <summary className="flex min-h-[44px] cursor-pointer list-none items-start gap-3 px-4 py-3 transition-colors hover:bg-surface-hover">
                 <span className="mt-0.5 shrink-0 font-mono text-xs tabular-nums text-faint">{num}</span>
                 <span className="min-w-0 flex-1">
@@ -83,7 +83,7 @@ function StarCards({ header, rows }: { header: string[]; rows: string[][] }) {
                   if (!value) return null;
                   return (
                     <div key={f.label} className={f.label === "Reflection" ? "sm:col-span-2" : undefined}>
-                      <dt className="font-mono text-[11px] uppercase tracking-[0.14em] text-faint">{f.label}</dt>
+                      <dt className="font-mono text-xs uppercase tracking-[0.14em] text-faint">{f.label}</dt>
                       <dd className="mt-1 text-sm text-foreground">{value}</dd>
                     </div>
                   );

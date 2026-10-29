@@ -53,11 +53,11 @@ export function ApplyChecklist({
   return (
     <PageFrame className="max-w-3xl">
       <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-brand">
-        <ArrowLeft className="size-4" /> Pipeline
+        <ArrowLeft className="size-4" /> Applications
       </Link>
       <header className="mt-5">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-faint">Apply checklist</p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight text-landing">{company}</h1>
+        <p className="text-sm font-medium text-muted">Apply checklist</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-[28px]">{company}</h1>
         {role && <p className="mt-1 text-muted">{role}</p>}
         <Link href={reportHref} className="mt-3 inline-flex text-sm text-brand hover:underline">
           Back to the report
@@ -154,7 +154,7 @@ export function ApplyChecklist({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-8">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">{title}</h2>
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -166,7 +166,7 @@ function Empty({ children }: { children: ReactNode }) {
 
 function CopyField({ item }: { item: CopyItem }) {
   return (
-    <div className="rounded-xl border border-border bg-surface/30 px-4 py-3">
+    <div className="rounded-xl border border-border bg-surface px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium">{item.label}</p>
         <CopyButton text={item.text} label="Copy" />

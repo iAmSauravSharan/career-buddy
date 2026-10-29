@@ -103,7 +103,7 @@ export function CvEditor() {
       </div>
 
       {importing && (
-        <section aria-label="Upload a CV" className="mt-6 rounded-2xl border border-border bg-surface/40 p-5">
+        <section aria-label="Upload a CV" className="mt-6 rounded-xl border border-border bg-surface p-5">
           <h2 className="text-sm font-medium text-foreground">Upload a new CV</h2>
           <p className="mt-1 mb-4 text-[13px] text-muted">
             Drop or pick a PDF, Word (.docx), .md or .txt file, or paste the text. You review it before it is saved.
@@ -125,9 +125,9 @@ export function CvEditor() {
             }}
             spellCheck={false}
             placeholder="# Your Name&#10;&#10;## Summary&#10;..."
-            className="min-h-[60vh] w-full resize-none rounded-2xl border border-border bg-surface/50 p-4 font-mono text-sm leading-relaxed outline-none transition-colors placeholder:text-faint focus:border-brand/40"
+            className="min-h-[60vh] w-full resize-none rounded-xl border border-border bg-surface p-4 font-mono text-sm leading-relaxed outline-none transition-colors placeholder:text-faint focus:border-brand/40"
           />
-          <article className="report-prose min-h-[60vh] overflow-auto rounded-2xl border border-border bg-surface/30 p-5">
+          <article className="report-prose min-h-[60vh] overflow-auto rounded-xl border border-border bg-surface p-5">
             {content.trim() ? (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
             ) : (

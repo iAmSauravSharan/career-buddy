@@ -18,7 +18,7 @@ export default function LoginLoading() {
             ))}
           </div>
         </section>
-        <section className="rounded-2xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+        <section className="rounded-xl border border-border bg-surface p-6 shadow-xl sm:p-8">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="mt-3 h-4 w-full" />
           <div className="mt-6 space-y-4">

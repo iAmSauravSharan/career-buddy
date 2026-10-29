@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, Clock, Edit3, Globe, Loader2, MoreVertical, Pause, Play, Trash2, Zap } from "lucide-react";
 import type { ScheduledJob } from "@shared/types";
 import { cn } from "@/lib/cn";
-import { instrumentSerif } from "@/lib/fonts";
 
 export function JobCard({
   job,
@@ -67,7 +66,7 @@ export function JobCard({
   const letter = (job.name || "S").trim().charAt(0).toUpperCase();
 
   return (
-    <div className="co-rise group flex min-w-0 flex-col justify-between h-full gap-2.5 rounded-xl border border-border bg-surface/40 p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-sm">
+    <div className="co-rise group flex min-w-0 flex-col justify-between h-full gap-2.5 rounded-xl border border-border bg-surface p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-sm">
       <div className="space-y-2.5">
         {/* Top Header: Logo + Title + 3-Dots Menu */}
         <div className="flex items-start gap-3">
@@ -75,7 +74,7 @@ export function JobCard({
             {letter}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className={`${instrumentSerif.className} truncate text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand`}>
+            <h3 className={`font-display truncate text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand`}>
               {job.name}
             </h3>
             <p className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted">
@@ -128,7 +127,7 @@ export function JobCard({
         </div>
 
         {/* Engine & Status Badges */}
-        <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <span
             className={cn(
               "inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-medium",
@@ -154,7 +153,7 @@ export function JobCard({
 
         {/* Keywords clamped to max 2 lines */}
         {positiveList.length > 0 && (
-          <div className="max-h-12 overflow-hidden flex flex-wrap items-center gap-1.5 text-[11px]">
+          <div className="max-h-12 overflow-hidden flex flex-wrap items-center gap-1.5 text-xs">
             <span className="text-faint shrink-0">matched:</span>
             {positiveList.map((kw, i) => (
               <span key={i} className="rounded border border-border px-1.5 py-0.5 font-medium text-muted truncate max-w-[140px]">

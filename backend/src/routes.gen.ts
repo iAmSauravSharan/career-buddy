@@ -29,37 +29,39 @@ import * as r25 from "./routes/inbox/skip/route";
 import * as r26 from "./routes/keyword-match/route";
 import * as r27 from "./routes/logo/route";
 import * as r28 from "./routes/memory/route";
-import * as r29 from "./routes/patterns/route";
-import * as r30 from "./routes/pdf-ready/route";
-import * as r31 from "./routes/personalization/route";
-import * as r32 from "./routes/pipeline/route";
-import * as r33 from "./routes/portals/route";
-import * as r34 from "./routes/portals/verify/route";
-import * as r35 from "./routes/profile/route";
-import * as r36 from "./routes/quiet-companies/route";
-import * as r37 from "./routes/report/shape/route";
-import * as r38 from "./routes/run/route";
-import * as r39 from "./routes/runs/save/route";
-import * as r40 from "./routes/scheduled-jobs/route";
-import * as r41 from "./routes/scheduled-jobs/[id]/route";
-import * as r42 from "./routes/scheduled-jobs/[id]/run/route";
-import * as r43 from "./routes/scheduler/route";
-import * as r44 from "./routes/stats/route";
-import * as r45 from "./routes/status/route";
-import * as r46 from "./routes/tracker/delete/route";
-import * as r47 from "./routes/upskill/route";
-import * as r48 from "./routes/usage/route";
-import * as r49 from "./routes/version/route";
-import * as r50 from "./routes/views/analytics/route";
-import * as r51 from "./routes/views/apply/[id]/route";
-import * as r52 from "./routes/views/compare/route";
-import * as r53 from "./routes/views/explore/route";
-import * as r54 from "./routes/views/home/route";
-import * as r55 from "./routes/views/pipeline/route";
-import * as r56 from "./routes/views/portals/route";
-import * as r57 from "./routes/views/report/[id]/route";
-import * as r58 from "./routes/views/shell/route";
-import * as r59 from "./routes/whats-new/route";
+import * as r29 from "./routes/onboarding/route";
+import * as r30 from "./routes/patterns/route";
+import * as r31 from "./routes/pdf-ready/route";
+import * as r32 from "./routes/personalization/route";
+import * as r33 from "./routes/pipeline/route";
+import * as r34 from "./routes/portals/route";
+import * as r35 from "./routes/portals/verify/route";
+import * as r36 from "./routes/profile/route";
+import * as r37 from "./routes/quiet-companies/route";
+import * as r38 from "./routes/report/shape/route";
+import * as r39 from "./routes/run/route";
+import * as r40 from "./routes/runs/save/route";
+import * as r41 from "./routes/scheduled-jobs/route";
+import * as r42 from "./routes/scheduled-jobs/[id]/route";
+import * as r43 from "./routes/scheduled-jobs/[id]/run/route";
+import * as r44 from "./routes/scheduler/route";
+import * as r45 from "./routes/stats/route";
+import * as r46 from "./routes/status/route";
+import * as r47 from "./routes/tracker/delete/route";
+import * as r48 from "./routes/upskill/route";
+import * as r49 from "./routes/usage/route";
+import * as r50 from "./routes/version/route";
+import * as r51 from "./routes/views/analytics/route";
+import * as r52 from "./routes/views/apply/[id]/route";
+import * as r53 from "./routes/views/compare/route";
+import * as r54 from "./routes/views/explore/route";
+import * as r55 from "./routes/views/home/route";
+import * as r56 from "./routes/views/onboarding/route";
+import * as r57 from "./routes/views/pipeline/route";
+import * as r58 from "./routes/views/portals/route";
+import * as r59 from "./routes/views/report/[id]/route";
+import * as r60 from "./routes/views/shell/route";
+import * as r61 from "./routes/whats-new/route";
 
 export const routes: { path: string; mod: RouteModule }[] = [
   { path: "/api/apply/close", mod: r0 },
@@ -91,35 +93,37 @@ export const routes: { path: string; mod: RouteModule }[] = [
   { path: "/api/keyword-match", mod: r26 },
   { path: "/api/logo", mod: r27 },
   { path: "/api/memory", mod: r28 },
-  { path: "/api/patterns", mod: r29 },
-  { path: "/api/pdf-ready", mod: r30 },
-  { path: "/api/personalization", mod: r31 },
-  { path: "/api/pipeline", mod: r32 },
-  { path: "/api/portals", mod: r33 },
-  { path: "/api/portals/verify", mod: r34 },
-  { path: "/api/profile", mod: r35 },
-  { path: "/api/quiet-companies", mod: r36 },
-  { path: "/api/report/shape", mod: r37 },
-  { path: "/api/run", mod: r38 },
-  { path: "/api/runs/save", mod: r39 },
-  { path: "/api/scheduled-jobs", mod: r40 },
-  { path: "/api/scheduled-jobs/:id", mod: r41 },
-  { path: "/api/scheduled-jobs/:id/run", mod: r42 },
-  { path: "/api/scheduler", mod: r43 },
-  { path: "/api/stats", mod: r44 },
-  { path: "/api/status", mod: r45 },
-  { path: "/api/tracker/delete", mod: r46 },
-  { path: "/api/upskill", mod: r47 },
-  { path: "/api/usage", mod: r48 },
-  { path: "/api/version", mod: r49 },
-  { path: "/api/views/analytics", mod: r50 },
-  { path: "/api/views/apply/:id", mod: r51 },
-  { path: "/api/views/compare", mod: r52 },
-  { path: "/api/views/explore", mod: r53 },
-  { path: "/api/views/home", mod: r54 },
-  { path: "/api/views/pipeline", mod: r55 },
-  { path: "/api/views/portals", mod: r56 },
-  { path: "/api/views/report/:id", mod: r57 },
-  { path: "/api/views/shell", mod: r58 },
-  { path: "/api/whats-new", mod: r59 },
+  { path: "/api/onboarding", mod: r29 },
+  { path: "/api/patterns", mod: r30 },
+  { path: "/api/pdf-ready", mod: r31 },
+  { path: "/api/personalization", mod: r32 },
+  { path: "/api/pipeline", mod: r33 },
+  { path: "/api/portals", mod: r34 },
+  { path: "/api/portals/verify", mod: r35 },
+  { path: "/api/profile", mod: r36 },
+  { path: "/api/quiet-companies", mod: r37 },
+  { path: "/api/report/shape", mod: r38 },
+  { path: "/api/run", mod: r39 },
+  { path: "/api/runs/save", mod: r40 },
+  { path: "/api/scheduled-jobs", mod: r41 },
+  { path: "/api/scheduled-jobs/:id", mod: r42 },
+  { path: "/api/scheduled-jobs/:id/run", mod: r43 },
+  { path: "/api/scheduler", mod: r44 },
+  { path: "/api/stats", mod: r45 },
+  { path: "/api/status", mod: r46 },
+  { path: "/api/tracker/delete", mod: r47 },
+  { path: "/api/upskill", mod: r48 },
+  { path: "/api/usage", mod: r49 },
+  { path: "/api/version", mod: r50 },
+  { path: "/api/views/analytics", mod: r51 },
+  { path: "/api/views/apply/:id", mod: r52 },
+  { path: "/api/views/compare", mod: r53 },
+  { path: "/api/views/explore", mod: r54 },
+  { path: "/api/views/home", mod: r55 },
+  { path: "/api/views/onboarding", mod: r56 },
+  { path: "/api/views/pipeline", mod: r57 },
+  { path: "/api/views/portals", mod: r58 },
+  { path: "/api/views/report/:id", mod: r59 },
+  { path: "/api/views/shell", mod: r60 },
+  { path: "/api/whats-new", mod: r61 },
 ];

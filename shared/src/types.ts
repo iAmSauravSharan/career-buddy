@@ -83,3 +83,16 @@ export type JobRun = {
   rolesFound?: number;
   engine?: ScanEngine;
 };
+
+export type SpendTier = "economy" | "standard" | "premium";
+
+/** The onboarding stepper's form: GET /api/views/onboarding returns it, POST /api/onboarding saves it. */
+export type OnboardingForm = {
+  candidate: { full_name: string; email: string; phone: string; linkedin: string; portfolio_url: string };
+  location: { city: string; country: string; timezone: string; needs_sponsorship: boolean; authorized_in: string[] };
+  target_roles: string[];
+  work_style: string;
+  compensation: { currency: string; target_range: string; minimum: string };
+  spend_tier: SpendTier;
+  search: { countries: string[]; cities: string[] };
+};

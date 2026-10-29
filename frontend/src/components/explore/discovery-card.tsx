@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { ExternalLink, Plus, Check, Loader2, ShieldQuestion, Sparkles, Coins } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { instrumentSerif } from "@/lib/fonts";
 import { ATS_LABEL, type AtsSource, type DiscoveredOffer } from "@shared/explore";
 import { CHINA_SOURCES, EMPLOYER_LABEL } from "@shared/employer-preset.mjs";
 import { useJobs } from "@/components/jobs/job-store";
@@ -65,11 +64,11 @@ export function DiscoveryCard({ offer, inPipeline, evaluatedN }: { offer: Discov
   };
 
   return (
-    <div className="co-rise group flex min-w-0 flex-col gap-2.5 rounded-xl border border-border bg-surface/40 p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-sm">
+    <div className="co-rise group flex min-w-0 flex-col gap-2.5 rounded-xl border border-border bg-surface p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-sm">
       <div className="flex items-start gap-3">
         {employer ? <div aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">{offer.company.charAt(0)}</div> : <Logo company={offer.company} />}
         <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block min-w-0 flex-1 max-sm:min-h-[44px]">
-          <h3 className={`${instrumentSerif.className} truncate text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand`}>{offer.title}</h3>
+          <h3 className={`font-display truncate text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand`}>{offer.title}</h3>
           <p className="mt-0.5 truncate text-[13px] text-muted">
             {offer.company}
             {(offer.location || employer) && <span className="text-faint"> · {offer.location || "Location unknown"}</span>}
@@ -87,7 +86,7 @@ export function DiscoveryCard({ offer, inPipeline, evaluatedN }: { offer: Discov
         </a>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+      <div className="flex flex-wrap items-center gap-1.5 text-xs">
         <span className="rounded border border-border px-1.5 py-0.5 font-medium text-muted">{ATS_LABEL[offer.ats as AtsSource] ?? EMPLOYER_LABEL[offer.ats as keyof typeof EMPLOYER_LABEL] ?? offer.ats}</span>
         {(fresh || employer) && <span className="text-faint">{fresh || "Posting date unknown"}</span>}
         {unverified && (
@@ -106,7 +105,7 @@ export function DiscoveryCard({ offer, inPipeline, evaluatedN }: { offer: Discov
         {offer.fit && (
           <span
             className={cn(
-              "rounded border px-1 py-0.5 text-[11px] font-medium",
+              "rounded border px-1 py-0.5 text-xs font-medium",
               offer.fit.band === "strong"
                 ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                 : "text-faint",

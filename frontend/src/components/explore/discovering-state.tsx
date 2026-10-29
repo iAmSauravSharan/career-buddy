@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { ApplyBackdrop } from "@/components/apply/apply-backdrop";
-import { instrumentSerif } from "@/lib/fonts";
 import { ATS_LABEL, ATS_SOURCES, type AtsSource } from "@shared/explore";
 import { useExplore, type SourceState } from "./explore-provider";
 
@@ -59,7 +58,7 @@ function SourceChip({ ats, s }: { ats: AtsSource; s?: SourceState }) {
       )}
       <span className="text-[13px] font-medium text-foreground">{ATS_LABEL[ats]}</span>
       <div className="ml-auto flex flex-col items-end gap-1">
-        {state === "noisy" && <span className="text-[10px] text-faint">~{s?.unreachable} skipped</span>}
+        {state === "noisy" && <span className="text-xs text-faint">~{s?.unreachable} skipped</span>}
         <div className="co-src__track">
           <div className="co-src__bar" style={{ width: `${pct}%` }} />
         </div>
@@ -85,7 +84,7 @@ export function DiscoveringState() {
         </div>
 
         <div>
-          <div className={`${instrumentSerif.className} co-disc__counter text-foreground`}>{shown}</div>
+          <div className={`font-display co-disc__counter text-foreground`}>{shown}</div>
           <p className="mt-1 text-sm text-muted">
             {phase === "revealing" ? "fresh roles found — free" : matchCount > 0 ? "fresh roles and counting…" : "scanning the network…"}
           </p>

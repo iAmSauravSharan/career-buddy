@@ -4,6 +4,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 const base = process.env.EXPLORE_EMPLOYER_TEST_URL;
 
+// The search form lives in a sheet opened from the one-line search summary.
+async function openSearchSheet(page) {
+  const sheet = page.getByRole("dialog", { name: "What are you looking for?", exact: true });
+  if (await sheet.count()) return sheet;
+  const edit = page.getByRole("button", { name: /^Edit search/ });
+  await edit.focus();
+  await page.keyboard.press("Enter");
+  await sheet.waitFor();
+  return sheet;
+}
+
 test(
   "employer preset keyboard flow, accessible validation and all terminal outcomes",
   { skip: !base, timeout: 180_000 },
@@ -47,7 +58,8 @@ test(
       logo.push(route.request().url());
       return route.abort();
     });
-    await page.goto(`${origin.origin}/explore`);
+    await page.goto(`${origin.origin}/explore?tab=search`);
+    let sheet = await openSearchSheet(page);
     const preset = page.getByRole("radio", {
       name: "Public ATS network",
       exact: true,
@@ -71,13 +83,13 @@ test(
     await preset.focus();
     await page.keyboard.press("ArrowRight");
     await page.getByRole("checkbox", { name: "Tencent / 腾讯" }).waitFor();
-    assert.equal(await page.getByText("工程师", { exact: true }).count(), 1);
-    assert.equal(await page.getByText("北京", { exact: true }).count(), 1);
+    assert.equal(await sheet.getByText("工程师", { exact: true }).count(), 1);
+    assert.equal(await sheet.getByText("北京", { exact: true }).count(), 1);
     assert.equal(
-      await page.getByText("Posted within", { exact: true }).count(),
+      await sheet.getByText("Posted within", { exact: true }).count(),
       0,
     );
-    const checkboxes = page.getByRole("checkbox");
+    const checkboxes = sheet.getByRole("checkbox");
     assert.equal(await checkboxes.count(), 3);
     assert.equal(
       await page
@@ -98,8 +110,8 @@ test(
       await page.keyboard.press("Tab");
       await page.keyboard.press("Space");
     }
-    const discover = page.getByRole("button", {
-      name: "Discover (free)",
+    const discover = sheet.getByRole("button", {
+      name: "Search now",
       exact: true,
     });
     assert.equal(await discover.isDisabled(), true);
@@ -160,20 +172,11 @@ test(
           resolve = r;
         }),
       };
-      const button = page.getByRole("button", {
-        name: /^(Discover|Re-cast) \(free\)$/,
-      });
-      // Refine is closed after a result; keyboard-open it before starting again.
-      if ((await button.count()) === 0) {
-        const refine = page.getByRole("button", {
-          name: "Refine search",
-          exact: true,
-        });
-        await refine.focus();
-        await page.keyboard.press("Enter");
-      }
-      const start = page.getByRole("button", {
-        name: /^(Discover|Re-cast) \(free\)$/,
+      // Starting a search closes the sheet; keyboard-open it before each run.
+      sheet = await openSearchSheet(page);
+      const start = sheet.getByRole("button", {
+        name: "Search now",
+        exact: true,
       });
       await start.focus();
       await page.keyboard.press("Enter");
@@ -214,11 +217,16 @@ test(
         "results are not a live region",
       );
       if (count) {
-        await page.getByRole("heading", { name: offer.title }).waitFor();
-        assert.equal(await page.getByText("Location unknown").count(), 1);
-        assert.equal(await page.getByText("Posting date unknown").count(), 1);
-        const link = page.getByRole("link", {
-          name: "Open the posting",
+        const row = page.getByRole("button", { name: new RegExp(offer.title) });
+        await row.waitFor();
+        assert.match(await row.innerText(), /Location unknown/);
+        assert.match(await row.innerText(), /Posting date unknown/);
+        await row.focus();
+        await page.keyboard.press("Enter");
+        const jobSheet = page.getByRole("dialog", { name: offer.title, exact: true });
+        await jobSheet.getByRole("heading", { name: offer.title }).waitFor();
+        const link = jobSheet.getByRole("link", {
+          name: "Open original posting",
           exact: true,
         });
         assert.equal(await link.getAttribute("href"), offer.url);
@@ -232,6 +240,9 @@ test(
         await opened.waitForLoadState();
         assert.equal(opened.url(), offer.url);
         await opened.close();
+        await page.bringToFront();
+        await page.keyboard.press("Escape");
+        await jobSheet.waitFor({ state: "detached" });
       }
     }
     for (const r of requests) {
@@ -254,10 +265,11 @@ test(
       `unexpected writes: ${writes}`,
     );
     // Leaving the preset preserves the user-entered terms and restores ATS controls.
+    sheet = await openSearchSheet(page);
     await preset.focus();
     await page.keyboard.press("Space");
-    await page.getByText("Posted within", { exact: true }).waitFor();
-    assert.equal(await page.getByText("工程师", { exact: true }).count(), 1);
+    await sheet.getByText("Posted within", { exact: true }).waitFor();
+    assert.equal(await sheet.getByText("工程师", { exact: true }).count(), 1);
   },
 );
 
@@ -325,7 +337,8 @@ test(
               .join("\n") + "\n",
         });
       });
-      await page.goto(`${new URL(base).origin}/explore`);
+      await page.goto(`${new URL(base).origin}/explore?tab=search`);
+      await openSearchSheet(page);
       const preset = page.getByRole("radio", {
         name: "Public ATS network",
         exact: true,
@@ -335,14 +348,19 @@ test(
         await preset.focus();
         await page.keyboard.press("ArrowRight");
       }
-      const discover = page.getByRole("button", {
-        name: "Discover (free)",
+      const discover = page.getByRole("dialog", { name: "What are you looking for?", exact: true }).getByRole("button", {
+        name: "Search now",
         exact: true,
       });
       await discover.focus();
       await page.keyboard.press("Enter");
+      // Every action on a result lives in its sheet: open it from the row.
+      const row = page.getByRole("button", { name: new RegExp(offer.title) });
+      await row.waitFor();
+      await row.focus();
+      await page.keyboard.press("Enter");
       const add = page.getByRole("button", {
-        name: "Add to pipeline",
+        name: "Save to Applications",
         exact: true,
       });
       await add.waitFor();
@@ -364,13 +382,13 @@ test(
       await page.keyboard.press("Enter");
       await addResponse;
       await page
-        .getByRole("button", { name: "In pipeline", exact: true })
+        .getByRole("button", { name: "Saved to Applications", exact: true })
         .waitFor();
       assert.equal(added.length, 1);
       assert.equal(added[0].offers[0].url, offer.url);
       assert.deepEqual(evaluated, []);
       const evaluate = page.getByRole("button", {
-        name: "Evaluate",
+        name: "Score this job",
         exact: true,
       });
       await evaluate.focus();

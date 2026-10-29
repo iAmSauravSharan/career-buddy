@@ -1,54 +1,32 @@
 import Link from "next/link";
-import { instrumentSerif } from "@/lib/fonts";
-import { cn } from "@/lib/cn";
+import { ChevronRight } from "lucide-react";
 
-// Stat tile with the home's resting gradient corner + lit edge + shadow. The
-// number is serif ONLY when `featured` (≤1 serif number per route); the rest
-// use Inter tabular-nums so numerals never form a serif wall.
-const CORNERS = {
-  br: "bg-gradient-to-br",
-  bl: "bg-gradient-to-bl",
-  tr: "bg-gradient-to-tr",
-} as const;
-
+// A headline number: icon, value, label. The whole card is the link, and the
+// accessible name reads "24 Active applications" rather than two loose strings.
 export function StatCard({
   href,
   icon: Icon,
   value,
   label,
-  hint,
-  featured = false,
-  corner = "br",
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   value: number | string;
   label: string;
-  hint: string;
-  featured?: boolean;
-  corner?: keyof typeof CORNERS;
 }) {
   return (
     <Link
       href={href}
-      className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border bg-surface/50 bg-origin-border p-5 shadow-lg transition-colors",
-        CORNERS[corner],
-        "from-brand/10 via-transparent to-transparent",
-        "hover:border-brand/40 hover:bg-surface-hover group-hover:from-brand/20",
-      )}
+      className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-[0_1px_2px_rgb(15_17_21/0.04)] transition-colors hover:border-foreground/20 hover:bg-surface-hover/60"
     >
-      <Icon className="size-5 text-brand" />
-      <div
-        className={cn(
-          "mt-3 text-4xl leading-none tabular-nums",
-          featured ? instrumentSerif.className : "font-semibold",
-        )}
-      >
-        {value}
-      </div>
-      <div className="mt-2 text-sm text-foreground">{label}</div>
-      <div className="text-xs text-faint">{hint}</div>
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-text">
+        <Icon className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-2xl font-semibold leading-tight tabular-nums text-foreground">{value}</span>
+        <span className="block truncate text-sm text-muted">{label}</span>
+      </span>
+      <ChevronRight className="size-4 shrink-0 text-faint transition-transform group-hover:translate-x-0.5" aria-hidden />
     </Link>
   );
 }

@@ -58,7 +58,7 @@ export function SkillGaps() {
 
   if (!model) {
     return (
-      <section className="mt-8 rounded-2xl border border-border bg-surface/40 px-5 py-4">
+      <section className="mt-8 rounded-xl border border-border bg-surface px-5 py-4">
         <div className="h-5 w-48 animate-pulse rounded bg-muted/25" aria-hidden />
         <div className="mt-3 h-24 w-full animate-pulse rounded bg-muted/25" aria-hidden />
       </section>
@@ -71,7 +71,7 @@ export function SkillGaps() {
 
   if (model.gaps.length === 0) {
     return (
-      <section className="mt-8 rounded-2xl border border-border bg-surface/40 px-5 py-4">
+      <section className="mt-8 rounded-xl border border-border bg-surface px-5 py-4">
         <Header />
         <p className="mt-2 text-sm text-muted">
           No recurring gaps yet. These are read from each report&apos;s Machine Summary and Gap table, so they appear
@@ -87,7 +87,7 @@ export function SkillGaps() {
   }
 
   return (
-    <section className="mt-8 rounded-2xl border border-border bg-surface/40 px-5 py-4">
+    <section className="mt-8 rounded-xl border border-border bg-surface px-5 py-4">
       <Header />
 
       <Caveats caveats={model.caveats} />

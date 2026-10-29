@@ -49,7 +49,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     }
   }
 
-  await page.goto(`${origin.origin}/pipeline?tab=ALL`);
+  await page.goto(`${origin.origin}/pipeline?tab=ALL&view=table`);
   await edit(11).waitFor();
   assert.equal(await page.locator("tbody tr").count(), 3);
   assert.equal(await page.getByRole("button", { name: /^Edit status/ }).count(), 3);
@@ -72,7 +72,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
 
   await t.test("sorting preserves the open editor and other rows remain usable", async () => {
     await edit(11).click();
-    await page.getByRole("button", { name: "company", exact: true }).click();
+    await page.getByRole("button", { name: "Company", exact: true }).click();
     await page.waitForURL(/sort=company/);
     await select(11).waitFor();
     assert.equal(await row(12).getByRole("combobox").count(), 0);
@@ -102,7 +102,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
   });
 
   await t.test("confirmed save updates filtered rows/counts before refresh, then persists", async (subtest) => {
-    await tab("EVALUATED").click();
+    await tab("To decide").click();
     await page.waitForURL(/tab=EVALUATED/);
     await edit(11).waitFor();
     let release;
@@ -118,23 +118,23 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     await edit(11).click();
     await select(11).selectOption("Applied");
     await until(() => row(11).count().then((count) => count === 0));
-    await until(() => tab("EVALUATED").innerText().then((text) => /^EVALUATED\s+1$/.test(text)));
-    assert.match(await tab("APPLIED").innerText(), /^APPLIED\s+2$/);
-    assert.equal(await tab("EVALUATED").evaluate((element) => document.activeElement === element), true);
+    await until(() => tab("To decide").innerText().then((text) => /^To decide\s+1$/.test(text)));
+    assert.match(await tab("Applied").innerText(), /^Applied\s+2$/);
+    assert.equal(await tab("To decide").evaluate((element) => document.activeElement === element), true);
     await until(() => held);
     assert.match(fs.readFileSync(tracker, "utf8"), /Fixture Alpha.*Applied/);
     release();
     await page.unrouteAll({ behavior: "wait" });
     await page.reload();
     assert.equal(await row(11).count(), 0);
-    await tab("APPLIED").click();
+    await tab("Applied").click();
     await edit(11).waitFor();
     assert.match(await row(11).innerText(), /Applied/);
     assert.match(fs.readFileSync(path.join(root, "data/status-log.tsv"), "utf8"), /11\t.*Evaluated\tApplied\tweb/);
   });
 
   await t.test("search during a delayed save cannot apply its response to a different row", async () => {
-    await tab("ALL").click();
+    await tab("All").click();
     await edit(13).waitFor();
     let release;
     const gate = new Promise((resolve) => { release = resolve; });
@@ -143,7 +143,8 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     await select(13).selectOption("Interview");
     const search = page.getByPlaceholder("Search company or role…");
     await search.fill("Fixture Beta");
-    assert.equal(await row(13).count(), 0);
+    // The list filters on a deferred copy of the search text, so wait for it.
+    await until(() => row(13).count().then((count) => count === 0));
     release();
     await until(() => fs.readFileSync(tracker, "utf8").includes("3.6/5 | Interview"));
     await page.unroute("**/api/status");
@@ -176,7 +177,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
 
   await t.test("detail-page dropdown retains the saved animation and persists", async () => {
     await page.goto(`${origin.origin}/pipeline/11`);
-    const detailSelect = page.getByLabel("status", { exact: true });
+    const detailSelect = page.getByLabel("Status", { exact: true });
     await detailSelect.waitFor();
     assert.equal(await detailSelect.inputValue(), "Applied");
     assert.equal(await page.getByRole("button", { name: /^Edit status/ }).count(), 0);
@@ -186,16 +187,16 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     assert.equal(await detailSelect.inputValue(), "Responded");
   });
 
-  await t.test("narrow-screen editor stays reachable by horizontal scroll; inbox has no editor", async () => {
+  await t.test("narrow-screen editor stays reachable by horizontal scroll; the card view has no editor", async () => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`${origin.origin}/pipeline?tab=ALL`);
+    await page.goto(`${origin.origin}/pipeline?tab=ALL&view=table`);
     await edit(11).click();
     await select(11).waitFor();
     assert.equal(await select(11).evaluate((element) => element.getBoundingClientRect().height >= 44), true);
     assert.equal(await row(11).getByRole("button", { name: /^Cancel editing/ }).evaluate((element) => element.getBoundingClientRect().height >= 44), true);
     await select(11).press("Escape");
-    await tab("INBOX").click();
-    await page.waitForURL((value) => !value.searchParams.has("tab"));
+    await page.goto(`${origin.origin}/pipeline`);
+    await page.getByRole("link", { name: /Fixture Alpha/ }).first().waitFor();
     assert.equal(await page.getByRole("button", { name: /^Edit status/ }).count(), 0);
   });
   assert.deepEqual(errors, []);

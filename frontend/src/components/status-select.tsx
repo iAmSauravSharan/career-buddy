@@ -146,7 +146,7 @@ function StatusEditor({ n, current, inline = false, applicationLabel, onSaved }:
         </>
       ) : (
         <>
-          <label htmlFor={id} className="text-xs text-faint">status</label>
+          <label htmlFor={id} className="text-xs text-muted">Status</label>
           {control}
         </>
       )}

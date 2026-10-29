@@ -9,11 +9,11 @@ export default function CvStudioLoading() {
       <Skeleton className="mt-2 h-4 w-80 max-w-full" />
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
         <div className="space-y-4">
-          <Skeleton className="h-16 w-full rounded-2xl" />
-          <Skeleton className="h-40 w-full rounded-2xl" />
-          <Skeleton className="h-64 w-full rounded-2xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
         </div>
-        <Skeleton className="h-[70vh] w-full rounded-2xl" />
+        <Skeleton className="h-[70vh] w-full rounded-xl" />
       </div>
     </div>
   );

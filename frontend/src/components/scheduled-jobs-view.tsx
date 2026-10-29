@@ -20,7 +20,6 @@ import { EditJobModal } from "./scheduled-scans/edit-job-modal";
 import { JobCard } from "./scheduled-scans/job-card";
 import { RunHistoryDrawer } from "./scheduled-scans/run-history-drawer";
 import type { ScheduledJob, JobRun } from "@shared/types";
-import { instrumentSerif } from "@/lib/fonts";
 import { updateScheduledJobRequest } from "@/lib/scheduled-job-client.mjs";
 import { isSchedulerStatusPayload } from "@/lib/scheduled-scheduler-status.mjs";
 
@@ -157,7 +156,7 @@ export function ScheduledJobsView() {
         <div>
           <div className="flex items-center gap-2.5">
             <CalendarClock className="size-6 text-brand" />
-            <h1 className={`${instrumentSerif.className} text-3xl text-foreground`}>Scheduled Scans</h1>
+            <h1 className={`font-display text-3xl text-foreground`}>Scheduled Scans</h1>
           </div>
           <p className="mt-1.5 max-w-2xl text-sm text-muted">
             Persistent, automated crawler jobs supporting Zero-Token and Full ATS Dataset sweeps.
@@ -176,7 +175,7 @@ export function ScheduledJobsView() {
           <button
             type="button"
             onClick={() => setHistoryDrawerOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/60 px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
           >
             <History className="size-4 text-brand" />
             Run Logs ({store.runs.length})
@@ -185,7 +184,7 @@ export function ScheduledJobsView() {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-surface/60 text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+            className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-surface text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
             title="Refresh list"
           >
             <RefreshCw className={`size-4 ${loading ? "animate-spin text-brand" : ""}`} />
@@ -204,7 +203,7 @@ export function ScheduledJobsView() {
 
       {/* OS Task Scheduler Banner */}
       {scheduler && (
-        <div className="co-rise rounded-2xl border border-border bg-surface/40 p-4 shadow-sm backdrop-blur-sm">
+        <div className="co-rise rounded-xl border border-border bg-surface p-4 shadow-sm backdrop-blur-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="grid size-9 place-items-center rounded-xl bg-surface-hover text-brand">
@@ -216,8 +215,8 @@ export function ScheduledJobsView() {
                   <span
                     className={
                       scheduler.task.exists && scheduler.task.enabled
-                        ? "rounded bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400"
-                        : "rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300"
+                        ? "rounded bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400"
+                        : "rounded bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300"
                     }
                   >
                     {!osScheduler
@@ -251,7 +250,7 @@ export function ScheduledJobsView() {
 
       {/* Filter Tabs & Search */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-full border border-border bg-surface/60 p-1">
+        <div className="flex items-center gap-1 rounded-full border border-border bg-surface p-1">
           <button
             type="button"
             onClick={() => setFilterTab("all")}
@@ -288,14 +287,14 @@ export function ScheduledJobsView() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search scans or keywords…"
-            className="w-full rounded-full border border-border bg-surface/60 pl-8 pr-3 py-1.5 text-xs text-foreground outline-none focus:border-brand/60"
+            className="w-full rounded-full border border-border bg-surface pl-8 pr-3 py-1.5 text-xs text-foreground outline-none focus:border-brand/60"
           />
         </div>
       </div>
 
       {/* Jobs Grid */}
       {filteredJobs.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-12 text-center">
+        <div className="rounded-xl border border-dashed border-border p-12 text-center">
           <CalendarClock className="mx-auto size-8 text-faint" />
           <h3 className="mt-3 text-sm font-semibold text-foreground">No scheduled scans found</h3>
           <p className="mt-1 text-xs text-muted">Create a new scan to start automatically discovering matching jobs.</p>
@@ -357,11 +356,11 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="co-rise flex items-center justify-between rounded-xl border border-border bg-surface/40 p-4 shadow-sm transition-all hover:border-brand/30 hover:shadow-md">
+    <div className="co-rise flex items-center justify-between rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:border-brand/30 hover:shadow-md">
       <div>
         <span className="text-xs font-medium text-muted">{label}</span>
         <div className="mt-1 text-2xl font-bold tracking-tight text-foreground">{value}</div>
-        <div className="mt-0.5 text-[11px] text-faint">{subtitle}</div>
+        <div className="mt-0.5 text-xs text-faint">{subtitle}</div>
       </div>
       <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
         {icon}

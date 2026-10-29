@@ -91,20 +91,24 @@ export function ReportView({
     <PageFrame className="max-w-3xl xl:max-w-5xl 2xl:max-w-[1600px]">
       <Link
         href={backHref}
-        className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-brand"
+        className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
       >
-        <ArrowLeft className="size-4" /> Pipeline
+        <ArrowLeft className="size-4" /> Applications
       </Link>
 
       <header className="mt-5">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-faint">#{id}</p>
-        <div className="mt-2 flex items-center gap-3">
-          <CompanyLogo name={company?.logoName ?? meta?.title ?? `Report #${id}`} size={40} />
-          <h1 className="font-display text-3xl tracking-tight text-landing">
-            {company?.label ?? meta?.title ?? `Report #${id}`}
-          </h1>
+        <div className="flex items-center gap-3">
+          <CompanyLogo name={company?.logoName ?? meta?.title ?? `Report #${id}`} size={44} />
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[28px]">
+              {company?.label ?? meta?.title ?? `Report #${id}`}
+            </h1>
+            <p className="mt-0.5 text-sm text-muted">
+              {app?.role && <>{app.role} · </>}
+              <span className="tabular-nums">#{id}</span>
+            </p>
+          </div>
         </div>
-        {app?.role && <p className="mt-1 text-muted">{app.role}</p>}
 
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           {app && <StatusSelect n={id} current={app.status} />}
@@ -113,7 +117,7 @@ export function ReportView({
           {applyHref && (
             <Link
               href={applyHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted transition-colors hover:border-brand/40 hover:text-brand max-sm:min-h-[44px]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-hover max-sm:min-h-[44px]"
             >
               Apply checklist
             </Link>
@@ -146,9 +150,9 @@ export function ReportView({
                 href={applyUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-1 text-brand hover:underline max-sm:min-h-[44px]"
+                className="inline-flex items-center justify-center gap-1 font-medium text-brand-text hover:underline max-sm:min-h-[44px]"
               >
-                posting <ExternalLink className="size-3" />
+                View job posting <ExternalLink className="size-3" />
               </a>
             )}
           </div>
@@ -169,18 +173,18 @@ export function ReportView({
               verdictContent: verdictSection?.content,
             });
             const verdictClass = recommended
-              ? "border-brand/25 bg-brand-soft/50"
-              : "border-border bg-surface/50";
+              ? "border-brand/30 bg-surface"
+              : "border-border bg-surface";
             const callout = (
-              <div className={`rounded-2xl border px-5 py-5 ${verdictClass}`}>
-                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">Verdict</p>
+              <section aria-label="Verdict" className={`rounded-xl border px-5 py-5 shadow-[0_1px_2px_rgb(15_17_21/0.04)] ${verdictClass}`}>
+                <h2 className="text-sm font-medium text-muted">Verdict</h2>
                 <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
                   {score ? (
-                    <p className="font-display text-4xl tabular-nums tracking-tight text-landing">{score}</p>
+                    <p className="text-4xl font-semibold tabular-nums tracking-tight text-foreground">{score}</p>
                   ) : (
                     <p className="text-sm text-muted">No score on this report.</p>
                   )}
-                  <p className="pb-1 text-xs text-muted">Apply line is {APPLY_LINE.toFixed(1)}</p>
+                  <p className="pb-1 text-sm text-muted">We suggest applying at {APPLY_LINE.toFixed(1)} or higher</p>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {score && <Badge tone={scoreTone(score)}>{score}</Badge>}
@@ -198,7 +202,7 @@ export function ReportView({
                     quiet={quietApply}
                   />
                 </div>
-              </div>
+              </section>
             );
             if (sections.length === 0) {
               return (
@@ -227,7 +231,7 @@ export function ReportView({
                     );
                   }
                   return (
-                    <details key={i} className="group mt-3 overflow-hidden rounded-xl border border-border bg-surface/30">
+                    <details key={i} className="group mt-3 overflow-hidden rounded-xl border border-border bg-surface">
                       <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-2 px-4 py-3 transition-colors hover:bg-surface-hover">
                         <span className="text-sm font-medium">{cleanHeading(s.heading)}</span>
                         <span className="hidden truncate text-xs text-faint sm:inline">{sectionPreview(s.content)}</span>
@@ -243,13 +247,13 @@ export function ReportView({
 
                 {machine.length > 0 && (
                   <>
-                    <div className="mt-6 flex items-center gap-3 text-[11px] uppercase tracking-[0.14em] text-faint">
+                    <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.14em] text-faint">
                       <span className="h-px flex-1 bg-border" />
                       Technical details · for developers
                       <span className="h-px flex-1 bg-border" />
                     </div>
                     {machine.map((s, i) => (
-                      <details key={i} className="group mt-2 overflow-hidden rounded-xl border border-border/60 bg-surface/20">
+                      <details key={i} className="group mt-2 overflow-hidden rounded-xl border border-border/60 bg-surface">
                         <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-2 px-4 py-3 font-mono text-xs text-muted transition-colors hover:bg-surface-hover">
                           {cleanHeading(s.heading)}
                           <ChevronDown className="ml-auto size-4 shrink-0 text-faint transition-transform group-open:rotate-180" />
@@ -276,7 +280,7 @@ export function ReportView({
           <ScoreMethodology />
         </>
       ) : (
-        <div className="mt-8 flex items-center gap-3 rounded-2xl border border-dashed border-border bg-surface/30 p-5 text-sm text-muted">
+        <div className="mt-8 flex items-center gap-3 rounded-xl border border-dashed border-border bg-surface p-5 text-sm text-muted">
           <FileText className="size-5 shrink-0 text-faint" />
           No report file found for #{id} in <code className="text-foreground">reports/</code>.
         </div>

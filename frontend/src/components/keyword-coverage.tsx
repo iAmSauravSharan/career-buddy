@@ -48,7 +48,7 @@ export function KeywordCoverage({ reportId }: { reportId: string }) {
 
   if (!model) {
     return (
-      <section className="mt-8 rounded-2xl border border-border bg-surface/40 px-5 py-4">
+      <section className="mt-8 rounded-xl border border-border bg-surface px-5 py-4">
         <div className="h-5 w-44 animate-pulse rounded bg-muted/25" aria-hidden />
         <div className="mt-3 h-16 w-full animate-pulse rounded bg-muted/25" aria-hidden />
       </section>
@@ -60,7 +60,7 @@ export function KeywordCoverage({ reportId }: { reportId: string }) {
     // tells the reader what to do next, and silently omitting the panel would
     // read as the check having passed.
     return (
-      <section className="mt-8 rounded-2xl border border-border bg-surface/40 px-5 py-4">
+      <section className="mt-8 rounded-xl border border-border bg-surface px-5 py-4">
         <Header />
         <p className="mt-2 text-sm text-muted">{REASON_COPY[model.reason ?? "unavailable"] ?? REASON_COPY.unavailable}</p>
       </section>
@@ -70,7 +70,7 @@ export function KeywordCoverage({ reportId }: { reportId: string }) {
   const band = coverageBand(model.coveragePct);
 
   return (
-    <section className="mt-8 rounded-2xl border border-border bg-surface/40 px-5 py-4">
+    <section className="mt-8 rounded-xl border border-border bg-surface px-5 py-4">
       <Header />
 
       <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">

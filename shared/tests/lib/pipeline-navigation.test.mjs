@@ -8,7 +8,7 @@ test("direct report visits retain the default Pipeline destination", () => {
 });
 
 test("the client and server round trip every existing list filter", () => {
-  const query = "tab=EVALUATED&min=3.5&sort=company&dir=1&q=Fixture";
+  const query = "tab=EVALUATED&min=3.5&sort=company&dir=1&view=table&q=Fixture";
   assert.equal(pipelineQuery(query), query);
   assert.equal(pipelineQuery(Object.fromEntries(new URLSearchParams(query))), query);
 });
@@ -39,9 +39,9 @@ test("empty filters do not introduce an empty query suffix", () => {
   assert.equal(pipelineQuery({ tab: "", min: undefined, q: [] }), "");
 });
 
-test("pipelineTab falls back to INBOX and reads the first repeated value", () => {
+test("pipelineTab falls back to ALL and reads the first repeated value", () => {
   assert.deepEqual(
     [pipelineTab(undefined), pipelineTab(""), pipelineTab("FOO"), pipelineTab("applied"), pipelineTab(["INBOX", "APPLIED"]), pipelineTab(["foo", "ALL"])],
-    ["INBOX", "INBOX", "INBOX", "APPLIED", "INBOX", "INBOX"],
+    ["ALL", "ALL", "ALL", "APPLIED", "INBOX", "ALL"],
   );
 });

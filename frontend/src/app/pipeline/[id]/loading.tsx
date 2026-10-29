@@ -21,7 +21,7 @@ export default function ReportLoading() {
       </header>
 
       <div className="mt-8 max-w-4xl">
-        <div className="rounded-2xl border border-brand/25 bg-brand-soft/50 px-5 py-4">
+        <div className="rounded-xl border border-brand/25 bg-brand-soft/50 px-5 py-4">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="mt-3 h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-4/5" />
@@ -33,7 +33,7 @@ export default function ReportLoading() {
           <Skeleton className="h-4 w-3/4" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="mt-3 overflow-hidden rounded-xl border border-border bg-surface/30">
+          <div key={i} className="mt-3 overflow-hidden rounded-xl border border-border bg-surface">
             <div className="flex min-h-[44px] items-center gap-2 px-4 py-3">
               <Skeleton className="h-4 w-40" />
               <Skeleton className="ml-auto size-4 rounded-full" />

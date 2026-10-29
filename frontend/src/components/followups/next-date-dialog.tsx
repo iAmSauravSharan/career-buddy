@@ -64,7 +64,7 @@ export function NextDateDialog({
   };
 
   const inputCls =
-    "w-full rounded-md border border-border bg-surface/60 px-3 py-2 text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/40";
+    "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/40";
 
   return (
     <div
@@ -77,7 +77,7 @@ export function NextDateDialog({
         role="dialog"
         aria-modal="true"
         aria-label={`Pin next follow-up date for ${entry.company}`}
-        className="w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-xl"
+        className="w-full max-w-sm rounded-xl border border-border bg-surface p-5 shadow-xl"
       >
         <div className="flex items-start justify-between gap-4">
           <div>

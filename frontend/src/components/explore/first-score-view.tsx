@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, X, FileText, Compass, ShieldCheck, Coins } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { instrumentSerif } from "@/lib/fonts";
 import { parseReport, scoreTone, legitimacyTone } from "@shared/format";
 import { useJobs, type Job } from "@/components/jobs/job-store";
 
@@ -123,13 +122,13 @@ export function FirstScoreView() {
         </button>
 
         <div className="relative px-7 pb-7 pt-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-brand">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-brand">
             <span className="text-faint">//</span> the job we found you — scored
           </p>
 
           <div className="mt-4 flex items-start gap-4">
             <div className="min-w-0 flex-1">
-              <h2 className={`${instrumentSerif.className} truncate text-2xl leading-tight text-foreground`}>{role || company}</h2>
+              <h2 className={`font-display truncate text-2xl leading-tight text-foreground`}>{role || company}</h2>
               {role && <p className="truncate text-sm text-muted">{company}</p>}
             </div>
             {score != null && (
@@ -142,20 +141,20 @@ export function FirstScoreView() {
                 >
                   {score}
                 </div>
-                <div className="text-[11px] uppercase tracking-wide text-faint">/ 5 fit</div>
+                <div className="text-xs uppercase tracking-wide text-faint">/ 5 fit</div>
               </div>
             )}
           </div>
 
           {/* THE WHY — the hero. A sentence that read THIS CV against THIS job. */}
-          <blockquote className={`${instrumentSerif.className} mt-5 border-l-2 border-brand/40 pl-4 text-[19px] leading-snug text-foreground`}>
+          <blockquote className={`font-display mt-5 border-l-2 border-brand/40 pl-4 text-[19px] leading-snug text-foreground`}>
             <Sparkles className="mb-1 inline size-4 text-brand" /> {why}
           </blockquote>
 
           {legit && (
             <div
               className={cn(
-                "mt-4 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                "mt-4 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
                 legitimacyTone(legit) === "good" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
               )}
             >
@@ -182,7 +181,7 @@ export function FirstScoreView() {
                 close();
                 router.push("/explore");
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface/50 px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-brand/40 hover:text-brand"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-brand/40 hover:text-brand"
             >
               <Compass className="size-4" /> Find more like this
             </button>

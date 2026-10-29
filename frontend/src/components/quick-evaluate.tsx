@@ -25,9 +25,9 @@ export function QuickEvaluate() {
   }
 
   return (
-    <div className="mt-7">
-      <div className="flex max-w-xl items-center gap-2 rounded-full border border-border bg-surface/70 py-1.5 pl-4 pr-1.5 shadow-sm focus-within:border-brand/50">
-        <Sparkles className="size-4 shrink-0 text-brand/70" />
+    <div className="mt-3">
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-surface py-1 pl-3 pr-1 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
+        <Sparkles className="size-4 shrink-0 text-faint" aria-hidden />
         <input
           value={url}
           onChange={(e) => {
@@ -37,21 +37,22 @@ export function QuickEvaluate() {
           onKeyDown={(e) => {
             if (e.key === "Enter") run();
           }}
-          placeholder="Paste a job URL to evaluate…"
-          className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none placeholder:text-faint"
+          placeholder="Paste a job URL…"
+          aria-label="Job posting URL to evaluate"
+          className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none placeholder:text-faint focus-visible:outline-none"
         />
         <button
           onClick={run}
-          className="shrink-0 rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200"
+          className="shrink-0 rounded-md bg-brand px-3.5 py-1.5 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200"
         >
           Evaluate
         </button>
       </div>
       <div className="mt-2 flex items-center gap-2">
         <CostBadge kind="spend" size="xs" />
-        <span className="text-xs text-faint">Evaluation runs on your own AI — your key, your machine.</span>
+        <span className="text-xs text-faint">Uses your AI credits.</span>
       </div>
-      {hint && <p className="mt-1 text-xs text-faint">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-muted" role="status">{hint}</p>}
     </div>
   );
 }

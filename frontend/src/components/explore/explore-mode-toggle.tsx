@@ -18,7 +18,7 @@ export function ExploreModeToggle({
   cliConfigured: boolean;
 }) {
   return (
-    <div className="flex w-full rounded-xl border border-border bg-surface/40 p-1 sm:inline-flex sm:w-auto">
+    <div className="flex w-full rounded-xl border border-border bg-surface p-1 sm:inline-flex sm:w-auto">
       <button
         type="button"
         onClick={() => onChange("scan")}
@@ -48,7 +48,7 @@ export function ExploreModeToggle({
         <span className="hidden sm:inline-flex">
           <CostBadge kind="spend" size="xs" />
         </span>
-        {!cliConfigured && <span className="text-[10px] text-faint">needs a CLI</span>}
+        {!cliConfigured && <span className="text-xs text-faint">needs a CLI</span>}
       </button>
     </div>
   );

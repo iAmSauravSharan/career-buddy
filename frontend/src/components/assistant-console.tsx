@@ -121,7 +121,7 @@ function removeRanges(s: string, cuts: [number, number][]): string {
 // the user is looking at.
 function describePage(p: string): string {
   if (p === "/") return "Today / home — overview of the user's pipeline.";
-  if (p === "/pipeline") return "Pipeline — the applications table + the inbox of pending job URLs.";
+  if (p === "/pipeline") return "Applications — tracked roles grouped by next step (cards), or a sortable table with ?view=table. New pending jobs live in Find jobs (/explore?tab=new).";
   const m = p.match(/^\/pipeline\/([^/]+)$/);
   if (m)
     return `The user is viewing the EVALUATION REPORT for application #${m[1]}. If they say "this offer", "apply", "evaluate it", "draft a cover letter", they mean application #${m[1]} — read reports/${m[1]}-*.md or the matching data/applications.md row and act on THAT one.`;
@@ -807,7 +807,7 @@ export function AssistantConsole() {
         <button
           ref={openerRef}
           onClick={(e) => openAssistant(e.currentTarget)}
-          className="fixed bottom-5 right-5 z-50 flex items-center justify-center gap-2 rounded-full border border-border bg-surface/90 py-1.5 pl-1.5 pr-4 shadow-lg backdrop-blur transition-colors hover:bg-surface-hover max-sm:min-h-[44px]"
+          className="fixed bottom-[calc(var(--tabbar-h)+1.25rem)] right-5 z-50 flex items-center justify-center gap-2 rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-4 shadow-lg backdrop-blur transition-colors hover:bg-surface-hover max-sm:min-h-[44px]"
           aria-label="Open assistant"
         >
           <CoMark size={26} />
@@ -827,7 +827,7 @@ export function AssistantConsole() {
             e.stopPropagation();
             closeAssistant();
           }}
-          className={cn("fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl", PANEL_CLASS[size])}
+          className={cn("fixed z-50 flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-2xl", PANEL_CLASS[size])}
         >
           <header className="flex items-center gap-2.5 border-b border-border px-4 py-3">
             <CoMark size={26} />
@@ -878,7 +878,7 @@ export function AssistantConsole() {
                 >
                   <div
                     className={cn(
-                      "max-w-[88%] rounded-2xl px-3.5 py-2 text-sm",
+                      "max-w-[88%] rounded-xl px-3.5 py-2 text-sm",
                       m.role === "user" ? "bg-brand text-brand-foreground" : "w-full bg-surface-hover text-foreground",
                     )}
                   >
@@ -906,7 +906,7 @@ export function AssistantConsole() {
                 <button
                   key={i}
                   onClick={() => send(s.send)}
-                  className="inline-flex items-center gap-1 rounded-full border border-border bg-surface/60 px-2.5 py-1 text-xs text-muted transition-colors hover:border-brand/40 hover:bg-brand-soft hover:text-brand"
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted transition-colors hover:border-brand/40 hover:bg-brand-soft hover:text-brand"
                 >
                   <Sparkles className="size-3 text-brand/70" />
                   {s.label}
@@ -919,7 +919,7 @@ export function AssistantConsole() {
             <Link
               href="/config"
               onClick={() => setOpen(false)}
-              className="mx-4 mb-2 flex items-center gap-2 rounded-lg border border-border bg-surface/50 px-3 py-2 text-xs text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+              className="mx-4 mb-2 flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
             >
               <Settings className="size-3.5" /> Pick a CLI in Config to enable the assistant →
             </Link>
@@ -945,7 +945,7 @@ export function AssistantConsole() {
                 rows={1}
                 disabled={!cliId}
                 style={{ maxHeight: INPUT_MAX_PX[size] }}
-                className="flex-1 resize-none rounded-xl border border-border bg-surface/60 px-3 py-2 text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50 disabled:opacity-50"
+                className="flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50 disabled:opacity-50"
               />
               <button
                 onClick={(e) => {
@@ -1010,7 +1010,7 @@ function PartView({
     const job = jobs.find((j) => j.id === part.jobId);
     if (!job)
       return (
-        <Link href={`/jobs/${part.jobId}`} className="block rounded-xl border border-border bg-surface/40 p-2.5 text-xs text-faint hover:text-foreground">
+        <Link href={`/jobs/${part.jobId}`} className="block rounded-xl border border-border bg-surface p-2.5 text-xs text-faint hover:text-foreground">
           Worker finished earlier — open log →
         </Link>
       );
@@ -1029,7 +1029,7 @@ function PartView({
   if (part.type === "batch") {
     const children = part.jobIds.map((id) => jobs.find((j) => j.id === id)).filter((j) => j != null);
     return (
-      <div className="rounded-xl border border-border bg-surface/40 p-2.5">
+      <div className="rounded-xl border border-border bg-surface p-2.5">
         <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium">
           <Sparkles className="size-3.5 text-brand" />
           {part.jobIds.length} evaluations

@@ -6,7 +6,7 @@ export default function CompareLoading() {
       <span className="sr-only">Loading comparison…</span>
       <Skeleton className="h-4 w-28" />
       <Skeleton className="mt-5 h-8 w-36" />
-      <div className="mt-6 space-y-3 rounded-2xl border border-border p-4">
+      <div className="mt-6 space-y-3 rounded-xl border border-border p-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-5 w-full" />
         ))}

@@ -30,7 +30,8 @@ test("loading transitions keep context and only latest requests settle Today", {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const tab = (label) => page.getByRole("button", { name: new RegExp(`^${label} \\d+$`) });
-  const heading = page.getByRole("heading", { level: 1 });
+  // The dashboard's status line (under the greeting) carries the queue state.
+  const heading = page.locator("#home-status");
   const updatesAlert = page.getByRole("alert").filter({ hasText: "could not be loaded." });
   async function until(check) {
     const started = Date.now();
@@ -72,11 +73,11 @@ test("loading transitions keep context and only latest requests settle Today", {
       if (route.request().headers().rsc === "1") { held = true; await pending.promise; }
       await route.continue();
     });
-    await tab("APPLIED").click();
+    await tab("Applied").click();
     await until(() => held);
-    assert.equal(await heading.innerText(), "Pipeline");
+    assert.equal(await page.getByRole("heading", { level: 1 }).innerText(), "Applications");
     assert.equal(await page.getByPlaceholder("Search company or role…").isVisible(), true);
-    assert.equal(await tab("ALL").isVisible(), true);
+    assert.equal(await tab("All").isVisible(), true);
     assert.equal(await page.locator('tbody[aria-busy="true"]').count(), 1);
     assert.ok(await page.locator('tbody[aria-busy="true"] tr').count() > 0);
     assert.equal(await page.locator('tbody[aria-busy="true"] tr').first().locator("td").count(), await page.locator("thead th").count());
@@ -100,7 +101,7 @@ test("loading transitions keep context and only latest requests settle Today", {
     await until(() => held);
     assert.equal(await heading.innerText(), "Follow-up Tracker");
     assert.equal(await page.getByPlaceholder("Search company or role…").isVisible(), true);
-    assert.equal(await tab("ALL").isVisible(), true);
+    assert.equal(await tab("All").isVisible(), true);
     assert.equal(await page.locator('tbody[aria-busy="true"]').count(), 1);
     assert.ok(await page.locator('tbody[aria-busy="true"] tr').count() > 0);
     pending.release();
@@ -134,7 +135,7 @@ test("loading transitions keep context and only latest requests settle Today", {
     assert.equal(await heading.innerText(), "Your career queue is loading.");
     await page.getByRole("region", { name: "Loading follow-ups due" }).waitFor();
     pending.release();
-    await page.getByRole("heading", { name: "You're all caught up." }).waitFor();
+    await until(async () => (await heading.innerText()) === "You're all caught up.");
     assert.equal(await updatesAlert.count(), 0);
   });
 
@@ -176,7 +177,7 @@ test("loading transitions keep context and only latest requests settle Today", {
     await page.reload();
     await started(1);
     release(1);
-    await page.getByRole("heading", { name: "You're all caught up." }).waitFor();
+    await until(async () => (await heading.innerText()) === "You're all caught up.");
     await refetch(); await started(2);
     await refetch(); await started(3);
     release(2);
@@ -187,11 +188,11 @@ test("loading transitions keep context and only latest requests settle Today", {
     await until(() => completed === 5);
     assert.equal(await heading.innerText(), "Your career queue is loading.");
     gates.get("3:/api/followups").release();
-    await page.getByRole("heading", { name: "You're all caught up." }).waitFor();
+    await until(async () => (await heading.innerText()) === "You're all caught up.");
     await refetch(); await started(4);
     await refetch(); await started(5);
     release(5);
-    await page.getByRole("heading", { name: "You're all caught up." }).waitFor();
+    await until(async () => (await heading.innerText()) === "You're all caught up.");
     release(4);
     await until(() => completed === 10);
     await page.waitForTimeout(100);

@@ -52,7 +52,7 @@ function KeywordField({
     setDraft("");
   };
   return (
-    <div className={cn("co-fb__field border border-border bg-surface/40 focus-within:border-brand/40 transition-colors")}>
+    <div className={cn("co-fb__field border border-border bg-surface focus-within:border-brand/40 transition-colors")}>
       {values.map((v) => (
         <span key={v} className={cn("co-fb__chip", tone === "inc" ? "inc" : "border-border bg-surface-hover text-muted")}>
           {tone === "exc" && <Ban className="size-3 opacity-70" />}
@@ -99,7 +99,7 @@ function Label({ children, hint }: { children: React.ReactNode; hint?: string })
   return (
     <div className="mb-1.5 flex items-baseline justify-between gap-4">
       <span className="text-[13px] font-medium text-foreground">{children}</span>
-      {hint && <span className="ml-4 text-right text-[11px] text-faint">{hint}</span>}
+      {hint && <span className="ml-4 text-right text-xs text-faint">{hint}</span>}
     </div>
   );
 }
@@ -147,7 +147,7 @@ export function FilterBuilder({
         <Label hint={filters.positive.length === 0 ? (employer ? "empty = all titles" : "empty = every fresh posting") : undefined}>Roles to find</Label>
         <KeywordField ariaLabel="Roles to find" values={filters.positive} tone="inc" placeholder="AI platform, ML infrastructure, staff engineer…" onChange={(v) => set({ positive: v })} />
         {!employer && seededFrom.length > 0 && filters.positive.length > 0 && (
-          <p className="mt-1 text-[11px] text-faint">Seeded from your {seededFrom.join(" + ")} — edit freely.</p>
+          <p className="mt-1 text-xs text-faint">Seeded from your {seededFrom.join(" + ")} — edit freely.</p>
         )}
       </div>
 
@@ -178,7 +178,7 @@ export function FilterBuilder({
               <Clock className="size-3.5 text-muted" /> Posted within
             </span>
           </Label>
-          <div className="inline-flex rounded-lg border border-border bg-surface/40 p-0.5">
+          <div className="inline-flex rounded-lg border border-border bg-surface p-0.5">
             {RECENCY.map((r) => (
               <button
                 key={r.days}
@@ -229,7 +229,7 @@ export function FilterBuilder({
       </button>}
 
       {!employer && advanced && (
-        <div className="space-y-3 rounded-xl border border-border bg-surface/30 p-3">
+        <div className="space-y-3 rounded-xl border border-border bg-surface p-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label hint="rescues a multi-location posting">Always include</Label>

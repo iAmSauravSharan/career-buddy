@@ -31,6 +31,10 @@ test("pipeline-view skips # and role report links in the tab order", () => {
   assert.doesNotMatch(companyOpen[0], /tabIndex=\{-1\}/, "company link must stay tabbable");
 });
 
-test("pipeline tabs expose aria-pressed for the active tab", () => {
-  assert.match(src, /aria-pressed=\{visibleTab === t\}/);
+test("pipeline stage chips expose aria-pressed for the active stage", () => {
+  const chips = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../../src/components/pipeline/application-cards.tsx"),
+    "utf8",
+  );
+  assert.match(chips, /const on = active === t;[\s\S]*aria-pressed=\{on\}/);
 });

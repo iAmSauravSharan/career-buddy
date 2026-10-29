@@ -37,7 +37,7 @@ export function ApplyButton({
         type="button"
         disabled
         title={!hasUrl ? "No application URL on this report" : "Generate the tailored CV (PDF) first to apply"}
-        className="inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-full border border-border bg-surface/40 px-3.5 py-1 text-xs font-medium text-faint max-sm:min-h-[44px]"
+        className="inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-1 text-xs font-medium text-faint max-sm:min-h-[44px]"
       >
         <Lock className="size-3.5" /> Apply
       </button>

@@ -102,7 +102,7 @@ export function ConfigForm() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="font-display text-2xl tracking-tight text-landing">Config</h1>
+      <h1 className="font-display text-2xl tracking-tight text-landing">Settings</h1>
       <p className="mt-1 text-sm text-muted">
         Run career-buddy on your own AI, right on your computer. Your CV and data never leave your machine.
       </p>
@@ -149,7 +149,7 @@ export function ConfigForm() {
                 <Loader2 className="size-4 animate-spin" /> Checking what&apos;s on your computer…
               </div>
             ) : installed.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border bg-surface/30 p-4 text-sm text-muted">
+              <div className="rounded-xl border border-dashed border-border bg-surface p-4 text-sm text-muted">
                 No AI tool yet? Free options like <span className="text-foreground">OpenCode</span> with Qwen or GLM work great.{" "}
                 <a href="https://career-ops.org/docs/free-ai-engine" target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-brand hover:underline">
                   Get one free <ExternalLink className="size-3" />
@@ -164,8 +164,8 @@ export function ConfigForm() {
                     selected
                       ? "border-brand/50 bg-brand-soft"
                       : c.installed
-                        ? "border-border bg-surface/50"
-                        : "border-border/60 bg-surface/20",
+                        ? "border-border bg-surface"
+                        : "border-border/60 bg-surface",
                   );
 
                   if (c.installed) {
@@ -219,11 +219,11 @@ export function ConfigForm() {
                   );
                 })}
                 {installed.length === 0 && (
-                  <p className="rounded-xl border border-dashed border-border bg-surface/30 p-4 text-xs text-muted">
+                  <p className="rounded-xl border border-dashed border-border bg-surface p-4 text-xs text-muted">
                     No supported CLI found on your PATH. Install one (e.g. Claude Code, Gemini CLI, OpenCode) to get started.
                   </p>
                 )}
-                <p className="mt-2 text-[11px] leading-relaxed text-faint">
+                <p className="mt-2 text-xs leading-relaxed text-faint">
                   Best on <span className="text-muted">Claude Code</span> (live progress, the agentic apply + AI search,
                   reliable evaluation persistence). Other CLIs work for the core flows with reduced features.
                 </p>
@@ -248,7 +248,7 @@ export function ConfigForm() {
                       "rounded-xl border px-4 py-2.5 text-left text-sm transition-colors",
                       provider === p.id
                         ? "border-brand/50 bg-brand-soft text-foreground"
-                        : "border-border bg-surface/50 text-muted hover:bg-surface-hover hover:text-foreground",
+                        : "border-border bg-surface text-muted hover:bg-surface-hover hover:text-foreground",
                     )}
                   >
                     {p.label}
@@ -267,7 +267,7 @@ export function ConfigForm() {
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="sk-…"
                 autoComplete="off"
-                className="w-full rounded-xl border border-border bg-surface/60 px-4 py-2.5 font-mono text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50"
+                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 font-mono text-sm outline-none transition-colors placeholder:text-faint focus:border-brand/50"
               />
               <p className="mt-2 text-xs text-faint">
                 Stored only in this browser — never sent anywhere but your chosen provider.
@@ -277,7 +277,7 @@ export function ConfigForm() {
         )}
 
         {mode === "manual" && (
-          <div className="rounded-xl border border-dashed border-border bg-surface/30 p-4 text-sm text-muted">
+          <div className="rounded-xl border border-dashed border-border bg-surface p-4 text-sm text-muted">
             The easiest way in — no keys, nothing to set up. On the roadmap.
           </div>
         )}
@@ -290,7 +290,7 @@ export function ConfigForm() {
       <button
         type="button"
         onClick={() => setLogos((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 rounded-xl border border-border bg-surface/50 px-4 py-3 text-left transition-colors hover:bg-surface-hover"
+        className="flex w-full items-center justify-between gap-4 rounded-xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-hover"
       >
         <span className="min-w-0">
           <span className="block text-sm font-medium text-foreground">Company logos</span>
@@ -354,10 +354,10 @@ function ModeCard({
       className={cn(
         "flex flex-col gap-1.5 rounded-xl border px-4 py-3 text-left transition-colors",
         disabled
-          ? "cursor-not-allowed border-border bg-surface/30 opacity-55"
+          ? "cursor-not-allowed border-border bg-surface opacity-55"
           : active
             ? "border-brand/50 bg-brand-soft"
-            : "border-border bg-surface/50 hover:bg-surface-hover",
+            : "border-border bg-surface hover:bg-surface-hover",
       )}
     >
       <Icon className={cn("size-4", active && !disabled ? "text-brand" : "text-muted")} />

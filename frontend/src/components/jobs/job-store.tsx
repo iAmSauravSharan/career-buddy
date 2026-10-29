@@ -70,7 +70,11 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     return () => { owner.dispose(); feedback.current = null; };
   }, []);
   const seq = useRef(0);
-  const loaded = useRef(false);
+  // State, not a ref: the first save must wait for the render that holds the
+  // restored list. With a ref, the save effect in the same commit wrote the
+  // initial [] over the stored history, and React's dev double-mount then
+  // "restored" that empty list.
+  const [loaded, setLoaded] = useState(false);
 
   // restore history
   useEffect(() => {
@@ -84,7 +88,7 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
-    loaded.current = true;
+    setLoaded(true);
   }, []);
 
   // persist. Every streamed chunk replaces `jobs`, so writes go through the
@@ -113,9 +117,9 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
   useEffect(() => {
-    if (!loaded.current) return;
+    if (!loaded) return;
     persister.current?.save(jobs);
-  }, [jobs]);
+  }, [jobs, loaded]);
 
   const patch = useCallback((id: string, fn: (j: Job) => Job) => {
     setJobs((js) => js.map((j) => (j.id === id ? fn(j) : j)));

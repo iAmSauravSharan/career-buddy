@@ -22,10 +22,10 @@ test("Pipeline detail links preserve the list context", { skip: !url || !root, t
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  const query = "tab=EVALUATED&min=3.5&sort=company&dir=1&q=Fixture";
-  const back = () => page.getByRole("link", { name: "Pipeline", exact: true }).filter({ has: page.locator("svg.lucide-arrow-left") });
+  const query = "tab=EVALUATED&min=3.5&sort=company&dir=1&view=table&q=Fixture";
+  const back = () => page.getByRole("link", { name: "Applications", exact: true }).filter({ has: page.locator("svg.lucide-arrow-left") });
 
-  await page.goto(`${origin.origin}/pipeline?tab=EVALUATED&min=3.5&sort=company&dir=1`);
+  await page.goto(`${origin.origin}/pipeline?tab=EVALUATED&min=3.5&sort=company&dir=1&view=table`);
   const search = page.getByPlaceholder("Search company or role…");
   await search.fill("Fixture"); // local typing does not update the URL
   const row = page.locator("tbody tr").filter({ has: page.getByRole("link", { name: "#11", exact: true }) });

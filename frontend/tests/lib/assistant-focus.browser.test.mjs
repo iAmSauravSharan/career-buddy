@@ -159,7 +159,7 @@ test("Assistant keyboard continuation, semantic context and modeless behavior", 
   await home.evaluate(() => window.dispatchEvent(new CustomEvent("co-assistant")));
   await until(() => focused(composer(home)));
   await until(() => home.getByRole("button", { name: "New chat", exact: true }).isEnabled());
-  const pipelineLink = home.getByRole("complementary").getByRole("link", { name: "Pipeline", exact: true });
+  const pipelineLink = home.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Applications", exact: true });
   await tabTo(home, pipelineLink);
   await home.keyboard.press("Enter");
   await home.waitForURL(/\/pipeline$/);

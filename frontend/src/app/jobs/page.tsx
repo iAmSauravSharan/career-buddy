@@ -36,7 +36,7 @@ export default function JobsHistory() {
       </div>
 
       {jobs.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-border bg-surface/30 px-6 py-12 text-center text-sm text-muted">
+        <div className="mt-8 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
           No workers yet. Hit <span className="text-foreground">Evaluate</span> on an inbox posting to start one.
           <span className="mt-2 block">
             Ran an evaluation from your AI CLI? It shows up in{" "}
@@ -47,7 +47,7 @@ export default function JobsHistory() {
           </span>
         </div>
       ) : (
-        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface/40">
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
           {jobs.map((j) => {
             const tone = pillTone(j);
             return (

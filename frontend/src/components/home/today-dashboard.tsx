@@ -3,33 +3,38 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, CircleHelp, Sparkles, ArrowRight } from "lucide-react";
-import { instrumentSerif } from "@/lib/fonts";
-import { HeroGlow } from "@/components/hero-glow";
+import { ArrowRight, BriefcaseBusiness, CalendarCheck, ExternalLink, Gift, Search, Scale, Sparkles } from "lucide-react";
 import type { Application, InboxJob } from "@shared/types";
 import type { DiscoveredOffer } from "@shared/explore";
-import { DiscoveryCard } from "@/components/explore/discovery-card";
+import type { CardReason } from "@shared/machine-summary.mjs";
 import { FollowUpCard, type FollowUp } from "@/components/home/follow-up-card";
 import { DecisionCard } from "@/components/home/decision-card";
-import type { CardReason } from "@shared/machine-summary.mjs";
+import { OnboardingProgress } from "@/components/home/onboarding-progress";
 import { QuickEvaluate } from "@/components/quick-evaluate";
-import { FollowupsDueSectionSkeleton } from "@/components/page-loading-skeletons";
+import { CompanyLogo } from "@/components/company-logo";
+import { Card, CardHeader } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { scoreNum } from "@shared/format";
 import { pickAwaitingDecision, groupAwaiting } from "@shared/home/awaiting.mjs";
-import { companyPresentation } from "@/lib/company-presentation.mjs";
-import { resolveHeroState, mayClaimAllClear, showsQueue, missingSourceLabel, displayCounts } from "@/lib/home/hero-state.mjs";
+import { resolveHeroState, mayClaimAllClear, missingSourceLabel, displayCounts } from "@/lib/home/hero-state.mjs";
+import { greeting, homeStats } from "@/lib/home/stats.mjs";
 
-// The retention "Today": a dual-loop action queue (the maintainer's
-// "N new matches this week · M follow-ups due"). SUPPLY loop = fresh free-scan
-// matches (zero tokens, /api/whats-new); DEMAND loop = follow-ups due
-// (/api/followups). Each item one-tap actionable. Home stays a VIEW over the
-// canonical files — every action dispatches a real registry action / route.
+// The dashboard: a greeting, four numbers, and at most three short lists of
+// things that need a decision today. Everything else (full tables, analytics,
+// settings) is one click away instead of on this page.
+//
+// The data loops are unchanged from the old "Today" view: follow-ups due
+// (/api/followups) and fresh scan matches (/api/whats-new), refetched after
+// every finished worker. hero-state.mjs still decides when the page may claim
+// "all caught up", so a failed source never reads as an empty queue.
 export function TodayDashboard({
   applications,
   reasons,
   legitimacy,
   inbox,
   inBetween,
+  firstName,
 }: {
   applications: Application[];
   reasons: Record<string, CardReason>;
@@ -37,6 +42,7 @@ export function TodayDashboard({
   legitimacy: Record<string, string>;
   inbox: Pick<InboxJob, "url" | "done">[];
   inBetween: boolean;
+  firstName?: string;
 }) {
   const [followups, setFollowups] = useState<FollowUp[]>([]);
   const [overdue, setOverdue] = useState(0);
@@ -48,9 +54,9 @@ export function TodayDashboard({
   const [freshCount, setFreshCount] = useState(0);
   const [freshLoading, setFreshLoading] = useState(true);
   const [freshError, setFreshError] = useState(false);
+  const [now, setNow] = useState<Date | null>(null);
   const requestGeneration = useRef(0);
   const router = useRouter();
-  const dateLabel = useMemo(() => new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }), []);
 
   const refetch = useCallback(() => {
     const generation = ++requestGeneration.current;
@@ -64,13 +70,8 @@ export function TodayDashboard({
       })
       .then((d) => {
         if (!isLatest()) return;
-        // The cadence route reports engine failures as HTTP 200 with
-        // available:false; that is unavailable, not an empty action queue.
+        // HTTP 200 with available:false is an engine failure, not an empty queue.
         if (d.available === false) throw new Error("Follow-ups unavailable");
-        // /api/followups already filters to urgency 'urgent'/'overdue' — due
-        // now, never 'waiting'/'cold' (#86). Both count toward "due"; a
-        // missing metadata.overdue must read as 0 due, never as "every entry
-        // is overdue" (the old `?? d.entries?.length` fallback).
         setFollowups(Array.isArray(d.entries) ? d.entries : []);
         setOverdue((d.metadata?.overdue ?? 0) + (d.metadata?.urgent ?? 0));
         setFollowupsEnabled(d.followupsEnabled !== false);
@@ -97,10 +98,9 @@ export function TodayDashboard({
   }, []);
 
   useEffect(() => {
+    setNow(new Date());
     refetch();
-    // A worker (evaluate/pdf) just wrote a real tracker row — refresh the server
-    // snapshot (applications/inbox props) + the client loops so the freshly-scored
-    // role appears in "Awaiting your decision" without a manual reload.
+    // A worker just wrote a tracker row: refresh the server snapshot and the loops.
     const onDone = () => {
       router.refresh();
       refetch();
@@ -112,205 +112,293 @@ export function TodayDashboard({
     };
   }, [refetch, router]);
 
-  // Awaiting decision: scored (Evaluated) but no terminal status yet. The
-  // ordering lives in lib/home/awaiting.mjs so it can be tested — see the file
-  // for why "first six in the array" was a bug waiting for #3529.
+  const stats = useMemo(() => homeStats(applications), [applications]);
   const awaiting = useMemo(() => pickAwaitingDecision(applications, scoreNum), [applications]);
-  // With the legitimacy, a flagged posting is grouped as the report page
-  // labels it (#5300), so "Apply next" below never points at one.
+  // Flagged postings are grouped apart (#5300), so "Apply next" never points at one.
   const awaitingGroups = useMemo(() => groupAwaiting(awaiting, (a) => legitimacy[a.n]), [awaiting, legitimacy]);
   const recommended = awaitingGroups.find(([label]) => label === "Recommended")?.[1] ?? [];
+  // Recommended first, then the rest in score order, two at most.
+  const decideNow = useMemo(() => {
+    const rest = awaiting.filter((a) => !recommended.includes(a));
+    return [...recommended, ...rest].slice(0, 2);
+  }, [awaiting, recommended]);
 
-  const newThisWeek = freshCount;
-  const dataLoading = followupsLoading || freshLoading;
-  const dataError = followupsError || freshError;
-  // Derived from the flags refetch() already maintains — no second fetch loop
-  // and no second source of truth. The only thing added is the distinction
-  // dataError cannot make: a failure with known work still has a queue to show.
   const heroState = resolveHeroState({
     followupsLoading,
     freshLoading,
     followupsError,
     freshError,
     overdue,
-    newThisWeek,
+    newThisWeek: freshCount,
     awaitingCount: awaiting.length,
   });
   const allClear = mayClaimAllClear(heroState);
   const missingSources = missingSourceLabel({ followupsError, freshError });
-  // Printed instead of the raw state: refetch() leaves the previous count in
-  // place when a source fails, so `overdue` can still hold a number from before
-  // the outage. See displayCounts().
-  const shown = displayCounts({ followupsError, freshError, overdue, newThisWeek });
+  const shown = displayCounts({ followupsError, freshError, overdue, newThisWeek: freshCount });
   const inboxUrls = useMemo(() => new Set(inbox.map((j) => j.url)), [inbox]);
+  const dataLoading = followupsLoading || freshLoading;
+
+  // The status line under the greeting. Its three fixed sentences are what the
+  // loading-transition browser test asserts, so a failed source can never read
+  // as "all caught up".
+  const summary =
+    heroState === "loading"
+      ? "Your career queue is loading."
+      : heroState === "unavailable"
+        ? "Some updates are unavailable."
+        : allClear
+          ? "You're all caught up."
+          : summaryLine(shown.overdue, shown.newThisWeek, awaiting.length);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10 max-sm:pb-24">
-      <section className="dot-bg relative overflow-hidden rounded-2xl border border-border bg-surface/40 px-7 py-10 md:px-10 md:py-12">
-        <HeroGlow />
-        {/* Readability scrim between the animated glow (z-0) and the copy (z-10). */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 z-[1] bg-surface/55 backdrop-blur-[2px] dark:bg-background/45" />
-        <div className="relative z-10">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
-            <span className="text-faint">//</span> today · <span className="tabular-nums">{dateLabel}</span>
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8 max-sm:pb-24">
+      {/* Greeting */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm text-faint" suppressHydrationWarning>
+            {now ? now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) : " "}
           </p>
-          <h1 className={`${instrumentSerif.className} mt-3 text-4xl leading-[1.05] text-landing md:text-5xl`}>
-            {heroState === "loading" ? (
-              <>Your career queue is loading.</>
-            ) : heroState === "unavailable" ? (
-              <>Some updates are unavailable.</>
-            ) : allClear ? (
-              <>You&apos;re all caught up.</>
-            ) : showsQueue(heroState) ? (
-              <>
-                {shown.newThisWeek > 0 && (
-                  <>
-                    <span className="text-brand tabular-nums">{shown.newThisWeek}</span> new match{shown.newThisWeek === 1 ? "" : "es"} this week
-                  </>
-                )}
-                {shown.newThisWeek > 0 && shown.overdue > 0 && <span className="text-faint"> · </span>}
-                {shown.overdue > 0 && (
-                  <>
-                    <span className="text-brand tabular-nums">{shown.overdue}</span> follow-up{shown.overdue === 1 ? "" : "s"} due
-                  </>
-                )}
-                {/* queue-partial with work known only from the server snapshot:
-                    both loops are down but the pipeline still has decisions
-                    waiting, so the queue is real while neither count is. */}
-                {shown.newThisWeek === 0 && shown.overdue === 0 && <>Your queue is waiting.</>}
-              </>
-            ) : (
-              <>Your queue is waiting.</>
-            )}
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-[28px]">
+            {now ? greeting(now.getHours()) : "Hello"}
+            {firstName ? `, ${firstName}` : ""}
           </h1>
-          <p className="mt-4 max-w-xl text-sm text-muted">
-            {heroState === "unavailable"
-              ? "We couldn't load all of today's updates. Try again."
-              : heroState === "queue-partial"
-                ? `${missingSources} could not be read, so this may be missing work. What loaded is below.`
-                : allClear
-                  ? "I'll keep scanning the market in the background and surface anything that fits."
-                  : followupsEnabled
-                    ? "Your action queue for today — discovery and follow-ups, in one place."
-                    : "Your action queue for today, in one place."}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            <Link href="/explore" className="inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-brand-foreground transition hover:bg-brand-200 max-sm:min-h-[44px]">
-              Find new roles <ArrowRight className="size-4" />
-            </Link>
-            <Link href="/pipeline" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition hover:border-brand/40 hover:text-brand max-sm:min-h-[44px]">
-              Open pipeline
-            </Link>
-          </div>
-          {inBetween && <QuickEvaluate />}
+          <p id="home-status" className="mt-1 text-[15px] text-muted" aria-live="polite">{summary}</p>
         </div>
-      </section>
+        <div className="flex gap-2">
+          <Link
+            href="/pipeline"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
+          >
+            Applications
+          </Link>
+          <Link
+            href="/explore"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-200"
+          >
+            <Search className="size-4" /> Find jobs
+          </Link>
+        </div>
+      </div>
 
-      {dataError && !dataLoading && (
-        <div role="alert" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface/40 px-5 py-4 text-sm text-muted">
-          <p>{missingSources} could not be loaded.</p>
-          <button type="button" onClick={refetch} className="font-medium text-brand hover:underline">Retry updates</button>
+      {/* Headline numbers */}
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard href="/pipeline?tab=ALL" icon={BriefcaseBusiness} value={stats.active} label="Active applications" />
+        <StatCard href="/pipeline?tab=INTERVIEW" icon={CalendarCheck} value={stats.interviews} label="Interviewing" />
+        <StatCard href="/pipeline?tab=OFFER" icon={Gift} value={stats.offers} label="Offers" />
+        <StatCard href="/pipeline?tab=EVALUATED" icon={Scale} value={awaiting.length} label="To decide" />
+      </div>
+
+      {missingSources && !dataLoading && (
+        <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
+          <p>{missingSources} could not be loaded. This page may be missing work.</p>
+          <button type="button" onClick={refetch} className="font-medium text-brand-text underline-offset-2 hover:underline">
+            Retry updates
+          </button>
         </div>
       )}
 
-      {/* A. Follow-ups due (demand loop) */}
-      {followupsLoading ? (
-        <FollowupsDueSectionSkeleton />
-      ) : followupsError ? (
-        null
-      ) : followups.length > 0 ? (
-        <Section icon={Bell} title="Follow-ups due" hint="Keep your applications alive — a nudge beats silence">
-          <div className="grid gap-2.5">
-            {followups.map((f) => (
-              // Refetch (not a local decrement) so the parent's followups/upcoming
-              // stay in sync with the server. Logging the LAST due item must flip this
-              // section over to "Upcoming" instead of leaving it empty.
-              <FollowUpCard key={`${f.num}-${f.company}`} followup={f} onLogged={refetch} />
-            ))}
-          </div>
-        </Section>
-      ) : null}
-
-      {!followupsLoading && !followupsError && upcoming.length > 0 && (
-        <Section icon={Bell} title="Upcoming" hint="Not due yet">
-          <ul className="grid gap-2">
-            {upcoming.map((item) => (
-              <li key={`${item.num ?? item.company}-${item.nextFollowupDate ?? ""}`}>
-                <Link
-                  href={item.num != null ? `/pipeline/${item.num}` : "/followups"}
-                  className="text-sm text-muted hover:text-brand"
-                >
-                  <span className="font-medium text-foreground">{item.company}</span>
-                  {item.role ? <span> · {item.role}</span> : null}
-                  {item.nextFollowupDate ? <span className="text-faint"> · {item.nextFollowupDate}</span> : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
-
-      {/* B. Awaiting your decision */}
-      {awaiting.length > 0 && (
-        <Section icon={CircleHelp} title="Awaiting your decision" hint="Best score first">
-          {recommended.length > 0 && (
-            <Link
-              href={`/pipeline/${recommended[0].n}`}
-              className="mb-3 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition hover:bg-brand-200 max-sm:min-h-[44px]"
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        {/* Main column: the three lists */}
+        <div className="min-w-0 space-y-6">
+          {followupsEnabled && (followupsLoading || followups.length > 0) && (
+            <Card
+              role="region"
+              aria-label={followupsLoading ? "Loading follow-ups due" : "Follow-ups due"}
+              aria-busy={followupsLoading || undefined}
             >
-              Apply next · {companyPresentation(recommended[0]).label} {recommended[0].score} <ArrowRight className="size-4" />
-            </Link>
+              <CardHeader
+                title={<>Follow-ups due{followups.length > 0 && <Count n={followups.length} />}</>}
+                action={<ViewAll href="/followups" label="View all follow-ups" />}
+              />
+              {followupsLoading ? (
+                <RowsSkeleton />
+              ) : (
+                <div className="grid gap-2">
+                  {followups.slice(0, 3).map((f) => (
+                    <FollowUpCard key={`${f.num}-${f.company}`} followup={f} onLogged={refetch} />
+                  ))}
+                </div>
+              )}
+            </Card>
           )}
-          {awaitingGroups.map(([label, group]) => (
-            <div key={label} className="mb-3">
-              <h3 className="mb-2 text-xs font-medium text-faint">{label}</h3>
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                {group.map((a) => (
+
+          {decideNow.length > 0 && (
+            <Card>
+              <CardHeader
+                title={<>Ready to decide<Count n={awaiting.length} /></>}
+                action={<ViewAll href="/pipeline?tab=EVALUATED" label="View all roles waiting for a decision" />}
+              />
+              <p className="-mt-2 mb-4 text-sm text-muted">Scored roles, best match first. Review one to apply or skip it.</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {decideNow.slice(0, 2).map((a) => (
                   <DecisionCard key={a.n} app={a} reason={reasons[a.n]} />
                 ))}
               </div>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* C. Fresh matches this week (supply loop) */}
-      {!freshError && fresh.length > 0 && (
-        <Section icon={Sparkles} title="Fresh matches this week" hint="Found by your free scans · 0 tokens">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {fresh.slice(0, 6).map((o) => (
-              <DiscoveryCard key={o.url} offer={o} inPipeline={inboxUrls.has(o.url)} />
-            ))}
-          </div>
-          {fresh.length > 6 && (
-            <Link href="/explore?view=fresh" className="mt-3 inline-flex items-center text-sm text-muted transition hover:text-brand max-sm:min-h-[44px]">
-              See all {freshCount} →
-            </Link>
+            </Card>
           )}
-        </Section>
-      )}
 
-      {allClear && upcoming.length === 0 && (
-        <div className="mt-8 rounded-2xl border border-border bg-surface/30 px-6 py-10 text-center">
-          <Sparkles className="mx-auto size-6 text-brand" />
-          <p className="mx-auto mt-3 max-w-md text-sm text-muted">
-            Nothing needs you right now. Run a <Link href="/explore" className="text-brand hover:underline">free scan</Link> to surface this week&apos;s roles, or check your <Link href="/pipeline" className="text-brand hover:underline">pipeline</Link>.
-          </p>
+          {(freshLoading || fresh.length > 0) && !freshError && (
+            <Card>
+              <CardHeader
+                title={<>New matches this week{freshCount > 0 && <Count n={freshCount} />}</>}
+                action={<ViewAll href="/explore?view=fresh" label="See all new matches" />}
+              />
+              {freshLoading ? (
+                <RowsSkeleton />
+              ) : (
+                <ul className="-mx-2 divide-y divide-border">
+                  {fresh.slice(0, 5).map((o) => (
+                    <MatchRow key={o.url} offer={o} saved={inboxUrls.has(o.url)} />
+                  ))}
+                </ul>
+              )}
+            </Card>
+          )}
+
+          {allClear && (
+            <Card className="py-10 text-center">
+              <Sparkles className="mx-auto size-6 text-brand" aria-hidden />
+              <p className="mt-3 text-base font-medium text-foreground">Nothing needs you right now</p>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-muted">We&apos;ll keep scanning and surface anything that fits. Run a free scan any time, or check on your applications.</p>
+              <Link href="/explore" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-brand-foreground hover:bg-brand-200">
+                Find jobs <ArrowRight className="size-4" />
+              </Link>
+            </Card>
+          )}
         </div>
-      )}
+
+        {/* Side rail */}
+        <aside className="min-w-0 space-y-6" aria-label="Overview">
+          <OnboardingProgress />
+
+          {inBetween && (
+            <Card>
+              <CardHeader title="Evaluate a job" />
+              <p className="-mt-2 text-sm text-muted">Paste a posting link to score it against your profile.</p>
+              <QuickEvaluate />
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader title="Your pipeline" action={<ViewAll href="/analytics" label="Open analytics" text="Analytics" />} />
+            <Funnel
+              rows={[
+                { label: "Scored", value: stats.evaluated + stats.applied, href: "/pipeline?tab=ALL" },
+                { label: "Applied", value: stats.applied, href: "/pipeline?tab=APPLIED" },
+                { label: "Heard back", value: stats.responded, href: "/pipeline?tab=RESPONDED" },
+                { label: "Offers", value: stats.offers, href: "/pipeline?tab=OFFER" },
+              ]}
+            />
+          </Card>
+
+          {!followupsLoading && !followupsError && upcoming.length > 0 && (
+            <Card>
+              <CardHeader title="Coming up" action={<ViewAll href="/followups" label="View all follow-ups" />} />
+              <ul className="space-y-3">
+                {upcoming.slice(0, 4).map((item) => (
+                  <li key={`${item.num ?? item.company}-${item.nextFollowupDate ?? ""}`}>
+                    <Link href={item.num != null ? `/pipeline/${item.num}` : "/followups"} className="flex items-center gap-3 rounded-lg text-sm hover:underline">
+                      <CompanyLogo name={item.company} size={24} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium text-foreground">{item.company}</span>
+                        {item.role && <span className="block truncate text-xs text-muted">{item.role}</span>}
+                      </span>
+                      {item.nextFollowupDate && <span className="shrink-0 text-xs text-faint">{item.nextFollowupDate}</span>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+        </aside>
+      </div>
     </div>
   );
 }
 
-function Section({ icon: Icon, title, hint, children }: { icon: React.ComponentType<{ className?: string }>; title: string; hint: string; children: React.ReactNode }) {
+function summaryLine(followupsDue: number, newMatches: number, toDecide: number): string {
+  const parts: string[] = [];
+  if (followupsDue > 0) parts.push(`${followupsDue} follow-up${followupsDue === 1 ? "" : "s"} due`);
+  if (toDecide > 0) parts.push(`${toDecide} role${toDecide === 1 ? "" : "s"} to decide on`);
+  if (newMatches > 0) parts.push(`${newMatches} new match${newMatches === 1 ? "" : "es"} this week`);
+  if (parts.length === 0) return "Here's where your search stands.";
+  const last = parts.pop();
+  return `You have ${parts.length ? `${parts.join(", ")} and ${last}` : last}.`;
+}
+
+function Count({ n }: { n: number }) {
+  return <span className="ml-2 rounded-full bg-surface-hover px-2 py-0.5 align-middle text-xs font-semibold tabular-nums text-muted">{n}</span>;
+}
+
+function ViewAll({ href, label, text = "View all" }: { href: string; label: string; text?: string }) {
   return (
-    <section className="mt-10">
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="size-4 text-brand" />
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">{title}</h2>
-        <span className="text-xs text-faint">· {hint}</span>
-      </div>
-      {children}
-    </section>
+    <Link href={href} aria-label={label} className="shrink-0 rounded text-sm font-medium text-brand-text underline-offset-2 hover:underline">
+      {text}
+    </Link>
+  );
+}
+
+function MatchRow({ offer, saved }: { offer: DiscoveredOffer; saved: boolean }) {
+  return (
+    <li>
+      <a
+        href={offer.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-surface-hover"
+      >
+        <CompanyLogo name={offer.company} size={32} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium text-foreground">{offer.title}</span>
+          <span className="block truncate text-sm text-muted">
+            {offer.company}
+            {offer.location && <> · {offer.location}</>}
+          </span>
+        </span>
+        {offer.fit?.band === "strong" && (
+          <span className="hidden shrink-0 rounded-full bg-emerald-500/12 px-2 py-0.5 text-xs font-medium text-emerald-800 sm:inline dark:text-emerald-300">Strong fit</span>
+        )}
+        {saved && <span className="hidden shrink-0 text-xs text-faint sm:inline">Saved</span>}
+        <ExternalLink className="size-4 shrink-0 text-faint group-hover:text-foreground" aria-hidden />
+        <span className="sr-only">(opens the posting in a new tab)</span>
+      </a>
+    </li>
+  );
+}
+
+function Funnel({ rows }: { rows: { label: string; value: number; href: string }[] }) {
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  return (
+    <ul className="space-y-3">
+      {rows.map((r) => (
+        <li key={r.label}>
+          <Link href={r.href} className="group block rounded">
+            <span className="flex items-baseline justify-between text-sm">
+              <span className="text-muted group-hover:text-foreground">{r.label}</span>
+              <span className="font-semibold tabular-nums text-foreground">{r.value}</span>
+            </span>
+            <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-surface-hover" aria-hidden>
+              <span className="block h-full rounded-full bg-brand" style={{ width: `${Math.max(r.value ? 4 : 0, Math.round((r.value / max) * 100))}%` }} />
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function RowsSkeleton() {
+  return (
+    <div className="space-y-3" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="flex items-center gap-3">
+          <Skeleton className="size-8 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-3.5 w-1/2" />
+            <Skeleton className="h-3 w-1/3" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

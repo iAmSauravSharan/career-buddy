@@ -272,13 +272,13 @@ export async function pdfPathForReport(n: string): Promise<string | null> {
 export type LifecyclePhase = "first-run" | "in-between" | "established";
 /**
  * Server-side lifecycle, mirroring the core doctor.mjs prerequisite list with the
- * SAME existsSync semantics (the SSOT the OnboardingBanner already reads via
+ * SAME existsSync semantics (the SSOT the dashboard setup card already reads via
  * /api/doctor). The 4 user-layer prereqs: cv.md, config/profile.yml,
  * modes/_profile.md, portals.yml (or CAREER_OPS_PORTALS).
  *   - first-run  → a TRULY empty install (no cv AND no data): the CV takeover.
  *     CRITICAL back-compat (maintainer): NEVER force onboarding on a user who
  *     already has data (a full pipeline/tracker with no cv.md is valid).
- *   - in-between → has cv/data but setup incomplete: dashboard + the nudge banner.
+ *   - in-between → has cv/data but setup incomplete: dashboard + the setup card.
  *   - established → all 4 prereqs present.
  * onboardingNeeded mirrors doctor.mjs: true if ANY prereq is missing → show banner.
  */

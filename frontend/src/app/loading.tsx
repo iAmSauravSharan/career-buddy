@@ -1,42 +1,57 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Same shape as the dashboard (greeting, four numbers, list + side rail), so
+// nothing jumps when the data arrives.
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10 max-sm:pb-24" aria-label="Loading today">
-      <section className="dot-bg relative overflow-hidden rounded-2xl border border-border bg-surface/40 px-7 py-10 md:px-10 md:py-12">
-        <div className="relative z-10">
-          <Skeleton className="h-3 w-44" />
-          <div className="mt-4 space-y-2">
-            <Skeleton className="h-10 w-full max-w-4xl md:h-12" />
-            <Skeleton className="h-10 w-4/5 max-w-3xl md:h-12" />
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8 max-sm:pb-24" aria-label="Loading dashboard">
+      <Skeleton className="h-4 w-40" />
+      <Skeleton className="mt-2 h-8 w-72" />
+      <Skeleton className="mt-2 h-4 w-96 max-w-full" />
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-surface p-4">
+            <Skeleton className="size-10 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-3.5 w-28" />
+            </div>
           </div>
-          <div className="mt-5 space-y-2">
-            <Skeleton className="h-4 w-full max-w-xl" />
-            <Skeleton className="h-4 w-5/6 max-w-lg" />
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            <Skeleton className="h-10 w-36 rounded-full" />
-            <Skeleton className="h-10 w-32 rounded-full" />
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <div className="mb-3 flex items-center gap-2">
-          <Skeleton className="size-4 rounded-full" />
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="hidden h-3 w-64 sm:block" />
-        </div>
-        <div className="grid gap-2.5 sm:grid-cols-2">
+        ))}
+      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="space-y-6">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-border bg-surface/40 p-3.5">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="mt-2 h-3 w-1/2" />
-              <Skeleton className="mt-5 h-8 w-full rounded-md" />
+            <div key={i} className="rounded-xl border border-border bg-surface p-5">
+              <Skeleton className="h-5 w-40" />
+              <div className="mt-5 space-y-4">
+                {Array.from({ length: 3 }).map((_, j) => (
+                  <div key={j} className="flex items-center gap-3">
+                    <Skeleton className="size-8 rounded-lg" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-3.5 w-1/2" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
-      </section>
+        <div className="space-y-6">
+          <div className="rounded-xl border border-border bg-surface p-5">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="mt-3 h-2 w-full rounded-full" />
+            <Skeleton className="mt-5 h-10 w-full rounded-lg" />
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-5">
+            <Skeleton className="h-5 w-28" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="mt-4 h-2 w-full rounded-full" />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

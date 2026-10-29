@@ -153,7 +153,7 @@ export function EditJobModal({
           </div>
 
           {/* ─── Reuse FilterBuilder from Explore ─── */}
-          <div className="rounded-xl border border-border bg-surface/30 p-4">
+          <div className="rounded-xl border border-border bg-surface p-4">
             <FilterBuilder filters={filters} onChange={setFilters} />
           </div>
 

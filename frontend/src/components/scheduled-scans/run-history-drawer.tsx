@@ -51,7 +51,7 @@ export function RunHistoryDrawer({
               return (
                 <div
                   key={`${run.id || "run"}-${i}`}
-                  className="rounded-xl border border-border bg-surface/50 p-3.5 text-xs shadow-sm transition-colors hover:border-brand/30"
+                  className="rounded-xl border border-border bg-surface p-3.5 text-xs shadow-sm transition-colors hover:border-brand/30"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 font-medium">
@@ -70,12 +70,12 @@ export function RunHistoryDrawer({
                         {isSuccess ? "Success" : isRunning ? "Running" : isQueued ? "Queued" : isCancelled ? "Cancelled" : "Failed"}
                       </span>
                       {run.engine && (
-                        <span className="rounded bg-surface-hover px-1.5 py-0.5 text-[10px] text-faint uppercase font-mono">
+                        <span className="rounded bg-surface-hover px-1.5 py-0.5 text-xs text-faint uppercase font-mono">
                           {run.engine}
                         </span>
                       )}
                     </div>
-                    <span className="flex items-center gap-1 text-[11px] text-faint">
+                    <span className="flex items-center gap-1 text-xs text-faint">
                       <Clock className="size-3" />
                       {new Date(run.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </span>
@@ -83,7 +83,7 @@ export function RunHistoryDrawer({
 
                   <p className="mt-2 text-muted leading-relaxed">{run.message || "Execution completed"}</p>
 
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-faint border-t border-border/40 pt-1.5">
+                  <div className="mt-2 flex items-center justify-between text-xs text-faint border-t border-border/40 pt-1.5">
                     <span>Date: {new Date(run.at).toLocaleDateString()}</span>
                     {typeof run.rolesFound === "number" && (
                       <span className="font-semibold text-foreground">{run.rolesFound} roles found</span>

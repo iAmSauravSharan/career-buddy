@@ -1,33 +1,30 @@
 import { cn } from "@/lib/cn";
 
-// Panel with the docs home signature: a resting rotating brand-gradient corner
-// that lights the 1px edge (bg-origin-border). Both opt-in — dense work
-// surfaces (tables, lists) pass neither corner nor elevated.
-const CORNERS = {
-  br: "bg-gradient-to-br",
-  bl: "bg-gradient-to-bl",
-  tr: "bg-gradient-to-tr",
-  tl: "bg-gradient-to-tl",
-} as const;
-
+// The one container: a white card with a hairline border on the grey canvas.
+// `elevated` lifts it for things that float (popovers, the first-score sheet).
 export function Card({
   className,
-  corner,
   elevated,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & {
-  corner?: keyof typeof CORNERS;
-  elevated?: boolean;
-}) {
+}: React.HTMLAttributes<HTMLDivElement> & { elevated?: boolean }) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border bg-surface/50 p-5",
-        corner && `${CORNERS[corner]} from-brand/10 via-transparent to-transparent bg-origin-border`,
+        "relative rounded-xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgb(15_17_21/0.04)]",
         elevated && "shadow-lg",
         className,
       )}
       {...props}
     />
+  );
+}
+
+// Card heading row: title on the left, an optional action ("View all") on the right.
+export function CardHeader({ title, action, className }: { title: React.ReactNode; action?: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("mb-4 flex items-center justify-between gap-3", className)}>
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      {action}
+    </div>
   );
 }

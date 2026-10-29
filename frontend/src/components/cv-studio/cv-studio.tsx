@@ -41,9 +41,9 @@ export function CvStudio({ n }: { n: string }) {
       <Link href={`/pipeline/${n}`} className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-brand">
         <ArrowLeft className="size-4" /> Report #{n}
       </Link>
-      {load.kind === "loading" && <div className="mt-6 h-[70vh] animate-pulse rounded-2xl bg-muted/15" aria-label="Loading the CV Studio" />}
+      {load.kind === "loading" && <div className="mt-6 h-[70vh] animate-pulse rounded-xl bg-muted/15" aria-label="Loading the CV Studio" />}
       {load.kind === "error" && (
-        <div className="mt-8 max-w-xl rounded-2xl border border-border bg-surface/40 px-6 py-5">
+        <div className="mt-8 max-w-xl rounded-xl border border-border bg-surface px-6 py-5">
           <h1 className="font-display text-xl text-landing">{REASONS[load.reason]?.title ?? "The CV Studio could not open this CV"}</h1>
           <p className="mt-2 text-sm text-muted">{REASONS[load.reason]?.body ?? "Reload the page to try again."}</p>
         </div>

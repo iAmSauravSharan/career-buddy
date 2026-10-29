@@ -5,6 +5,7 @@ import { Bug, X, ShieldCheck, ThumbsUp, Search, Loader2 } from "lucide-react";
 import { collect, fingerprint, issueBody, issueUrl, type Diag } from "@/lib/report/report";
 import { searchIssues } from "@/lib/beta/issue-search.mjs";
 import "@/lib/report/logbuf"; // install the client error ring-buffer (side-effect)
+import { setBetaReporter } from "@/lib/beta-store";
 
 type SimilarIssue = { number: number; title: string; url: string };
 
@@ -83,15 +84,24 @@ export function BetaBanner() {
     });
   };
 
+  // Phones reach the report from the More menu; the pill is md+ only.
+  const metaLabel = meta ? `${meta.version} · ${meta.channel}` : null;
+  useEffect(() => {
+    setBetaReporter(metaLabel, metaLabel ? () => void openReport() : null);
+    return () => setBetaReporter(null, null);
+    // openReport only reads stable setters; re-register when the label changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metaLabel]);
+
   if (!meta) return null;
 
   return (
     <>
-      <div className="fixed bottom-3 left-3 z-[70] flex items-center gap-2 rounded-full border border-brand/30 bg-surface/90 px-3 py-1.5 text-xs shadow-lg backdrop-blur-md">
+      <div className="fixed bottom-5 right-32 z-[70] hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs shadow-lg backdrop-blur-md md:flex">
         <span className="flex items-center gap-1.5 font-medium text-brand-text">
           <span className="size-1.5 animate-pulse rounded-full bg-brand" /> {meta.version} · {meta.channel}
         </span>
-        {meta.sha && <span className="hidden font-mono text-faint sm:inline">{meta.sha}</span>}
+        {meta.sha && <span className="hidden font-mono text-faint xl:inline">{meta.sha}</span>}
         <button onClick={openReport} className="ml-1 inline-flex items-center justify-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 font-medium text-brand-text transition-colors hover:bg-brand/15 max-sm:min-h-[44px]">
           <Bug className="size-3" /> Report a bug
         </button>
@@ -99,7 +109,7 @@ export function BetaBanner() {
 
       {open && diag && (
         <div className="fixed inset-0 z-[96] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Report a bug" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-[var(--bg)] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-xl border border-border bg-[var(--bg)] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-center gap-2">
               <Bug className="size-4 text-brand" />
               <h2 className="text-sm font-semibold text-foreground">Report a bug · {diag.channel}</h2>
@@ -113,7 +123,7 @@ export function BetaBanner() {
               rows={4}
               autoFocus
               placeholder="What were you doing, and what went wrong?"
-              className="w-full resize-none rounded-lg border border-border bg-surface/60 px-3 py-2 text-sm outline-none transition focus:border-brand/50 focus:ring-2 focus:ring-brand/20"
+              className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition focus:border-brand/50 focus:ring-2 focus:ring-brand/20"
             />
             {desc.trim().split(/\s+/).length >= 3 && (
               <button
@@ -132,9 +142,9 @@ export function BetaBanner() {
                 Couldn&apos;t reach GitHub to check — file it anyway, a duplicate is cheaper than a lost report.
               </p>
             )}
-            <details className="mt-3 rounded-lg border border-border bg-surface/40">
+            <details className="mt-3 rounded-lg border border-border bg-surface">
               <summary className="cursor-pointer select-none px-3 py-2 text-xs font-medium text-muted">Exactly what gets attached — review before sending ↓</summary>
-              <pre className="max-h-52 overflow-auto whitespace-pre-wrap border-t border-border px-3 py-2 font-mono text-[11px] leading-relaxed text-muted">{issueBody(diag, desc)}</pre>
+              <pre className="max-h-52 overflow-auto whitespace-pre-wrap border-t border-border px-3 py-2 font-mono text-xs leading-relaxed text-muted">{issueBody(diag, desc)}</pre>
             </details>
             {similar.length > 0 && (
               <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2">
@@ -151,7 +161,7 @@ export function BetaBanner() {
                 </ul>
               </div>
             )}
-            <p className="mt-2 flex items-start gap-1.5 text-[11px] text-faint">
+            <p className="mt-2 flex items-start gap-1.5 text-xs text-faint">
               <ShieldCheck className="mt-px size-3.5 shrink-0 text-emerald-500" /> Opens a GitHub issue you confirm — nothing is sent until you click. NEVER includes your CV, profile, application answers, or job URLs.
             </p>
             <div className="mt-4 flex justify-end gap-2">
